@@ -1,3 +1,3 @@
 # Graphics is awesome
 
-Yay
+Yay, it works!
