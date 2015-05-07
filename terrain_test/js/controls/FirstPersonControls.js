@@ -215,7 +215,6 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 		else {
 			this.randTimer += 1;
-			console.log(this.randTimer);
 		}
 
 		/* with random perturbations in the x and y directions (this method for 

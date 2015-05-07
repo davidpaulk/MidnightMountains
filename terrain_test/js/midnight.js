@@ -41,6 +41,9 @@ function incrementScore() {
     $("#score").text(score);
 }
 
+// Music
+var backgroundMusic = null;
+
 init();
 animate();
 
@@ -100,6 +103,8 @@ function init() {
        objectsThreshold: 8,
        overlapPct: 0.15
     });
+
+    backgroundMusic = Sound.play("./sounds/music.mp3");
 }
 
 function getXZ(vec) {
@@ -308,10 +313,9 @@ function checkCollision() {
     var raycaster = new THREE.Raycaster(nextPos, new THREE.Vector3(0, -1, 0));
     var intersects = raycaster.intersectObject(scene, true);
     if (intersects.length == 0) {
-        document.getElementById("music").pause();
-        document.getElementById("mariodeath").play();
-        $("#dead").fadeIn(100, 'linear');
-        dead = true;
+        if (backgroundMusic) Sound.stop(backgroundMusic);
+        Sound.play("./sounds/dead.wav");
+        $("#dead").fadeIn(100, 'linear'); dead = true;
     }
 }
 
@@ -357,7 +361,7 @@ function checkSphereCollision() {
         var sphere = results[i].object;
         if (camera.position.distanceTo(sphere.position) < 200) {
             incrementScore();
-            document.getElementById("coin").play();
+            Sound.play('./sounds/coin.mp3');
             sphereScene.remove(sphere);
             sphereOctree.remove(sphere);
         }
@@ -374,10 +378,3 @@ function render() {
     if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
 
-var started = false;
-window.addEventListener("click", function() {
-    if (!started) {
-        document.getElementById("music").play();
-        started = true;
-    }
-});

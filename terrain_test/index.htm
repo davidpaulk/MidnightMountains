@@ -10,6 +10,7 @@
 		<div id="container"><br /><br /><br /><br /><br />Generating world...</div>
         <div id="dead">You died!</div>
         <div id="scoreWrap">Score: <span id="score">0</span></div>
+        <!-- Third party libraries -->
 		<script src="js/underscore-min.js"></script>
 		<script src="js/three.min.js"></script>
 		<script src="js/jquery-1.11.3.min.js"></script>
@@ -18,10 +19,16 @@
 		<script src="js/ImprovedNoise.js"></script>
 		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
+
+        <!-- Our libraries -->
 		<script src="js/random.js"></script>
+		<script src="js/sound.js"></script>
+
+        <!-- Main scripts -->
 		<script src="js/midnight.js"></script>
-        <audio id="coin" src="sounds/coin.mp3"></audio>
-        <audio id="music" loop src="sounds/music.mp3"></audio>
-        <audio id="mariodeath" src="sounds/dead.wav"></audio>
+
+        <audio id="preload-music" loop src="sounds/music.mp3" preload="auto"></audio>
+        <audio id="preload-coin" loop src="sounds/coin.mp3" preload="auto"></audio>
+        <audio id="preload-mariodeath" src="sounds/dead.wav" preload="auto"></audio>
 	</body>
 </html>
