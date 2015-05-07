@@ -7,6 +7,8 @@ var cellRange = 4;
 //var bgColor = 0x222222;
 var bgColor = 0xbfd1e5;
 var numSpheres = 20;
+var fastSpeed = 2000;
+var slowSpeed = 1000;
 /*
    var heightMultiplier = 20;
    var worldWidth = worldDepth = 256;
@@ -69,7 +71,8 @@ function init() {
     //scene.fog = new THREE.Fog( 0xbfd1e5, 0, 1000);
 
     controls = new THREE.FirstPersonControls( camera );
-    controls.movementSpeed = 2000;
+    controls.fastSpeed = fastSpeed;
+    controls.slowSpeed = slowSpeed;
     controls.lookSpeed = 0.2;
 
     addCell(0, 0);

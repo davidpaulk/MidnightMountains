@@ -14,6 +14,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.enabled = true;
 
 	this.movementSpeed = 1.0;
+	this.fastSpeed = 1.0;
+	this.slowSpeed = 0.5;
 	this.lookSpeed = 0.005;
 
 	this.lookVertical = true;
@@ -89,12 +91,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		event.stopPropagation();
 
 		if ( this.activeLook ) {
-
 			switch ( event.button ) {
-
-				case 0: this.moveForward = true; break;
-				case 2: this.moveBackward = true; break;
-
+				case 0: this.movementSpeed = this.fastSpeed; this.moveForward = true; break;
+				//case 2: this.moveBackward = true; break;
 			}
 
 		}
@@ -111,10 +110,11 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		if ( this.activeLook ) {
 
 			switch ( event.button ) {
-
+				case 0: this.movementSpeed = this.slowSpeed; break;
+                /*
 				case 0: this.moveForward = false; break;
 				case 2: this.moveBackward = false; break;
-
+                */
 			}
 
 		}
