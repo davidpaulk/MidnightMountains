@@ -50,6 +50,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.viewHalfX = 0;
 	this.viewHalfY = 0;
 
+	this.randTimer = 0;
+	this.randPerturb = new THREE.Vector2(1.0, 1.0, 1.0);
+
 	if ( this.domElement !== document ) {
 
 		this.domElement.setAttribute( 'tabindex', -1 );
@@ -203,14 +206,29 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		var actualMoveSpeed = delta * this.movementSpeed;
 
+		// noise for "flutter effect" in flying (more-so random accelerations as of now)
+		// random perturbations vary speed by anywhere from -2 times to 4 times the original speed
+		if (this.randTimer == 50) {
+			var diskOffset = new THREE.Vector2(1.0, 1.0);
+			this.randPerturb = Random.disk(3.0, diskOffset);
+			this.randTimer = 0;
+		}
+		else {
+			this.randTimer += 1;
+			console.log(this.randTimer);
+		}
+
+		/* with random perturbations in the x and y directions (this method for 
+			perturbations applied in the z direction make the player's perspective 
+			seem very "glitchy"                                                    */
 		if ( this.moveForward || ( this.autoForward && !this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
 		if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
 
-		if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
-		if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
+		if ( this.moveLeft ) this.object.translateX( - randPerturb.x * actualMoveSpeed );
+		if ( this.moveRight ) this.object.translateX( randPerturb.x * actualMoveSpeed );
 
-		if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
-		if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
+		if ( this.moveUp ) this.object.translateY( randPerturb.y * actualMoveSpeed );
+		if ( this.moveDown ) this.object.translateY( - randPerturb.y * actualMoveSpeed );
 
 		var actualLookSpeed = delta * this.lookSpeed;
 
