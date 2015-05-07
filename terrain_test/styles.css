@@ -35,3 +35,14 @@ body {
             color: #a06851;
         }
 
+        #scoreWrap {
+            position: absolute; top: 0px; right: 0px;
+            background: blue;
+            color: white;
+            opacity: 0.6;
+            padding: 5px;
+            font-size: 16px;
+        }
+        #score {
+            font-weight: bold;
+        }

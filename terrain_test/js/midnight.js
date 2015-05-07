@@ -1,20 +1,12 @@
-if ( ! Detector.webgl ) {
-
-    Detector.addGetWebGLMessage();
-    document.getElementById( 'container' ).innerHTML = "";
-
-}
-
-var container, stats;
-
-var camera, controls, scene, renderer;
-
-var mesh, texture;
-
+// Parameters
+var seed = Math.random() * 100;
 var heightMultiplier = 30;
 var worldWidth = worldDepth = 32;
 var cellSize = 1500;
-var cellRange = 9;
+var cellRange = 4;
+//var bgColor = 0x222222;
+var bgColor = 0xbfd1e5;
+var numSpheres = 20;
 /*
    var heightMultiplier = 20;
    var worldWidth = worldDepth = 256;
@@ -22,26 +14,54 @@ var cellRange = 9;
    var cellRange = 1;
    */
 
-var worldHalfWidth = worldWidth / 2, worldHalfDepth = worldDepth / 2;
+// End parameters
 
+if ( ! Detector.webgl ) {
+    Detector.addGetWebGLMessage();
+    document.getElementById( 'container' ).innerHTML = "";
+}
+
+cellRange = cellRange * 2 + 1;
+var container, stats;
+var camera, controls, scene, renderer;
+var mesh, texture;
 var clock = new THREE.Clock();
 var cells = {};
 var cellX;
 var cellZ;
-var seed = Math.random() * 100;
-var data, moreData;
+var data;
+var spheres = [];
+var maxDist = cellSize * ((cellRange - 1) / 2);
+var frame = 0;
+var sphereScene;
+var sphereOctree;
+var score = 0;
+function incrementScore() {
+    score++;
+    $("#score").text(score);
+}
 
 init();
 animate();
 
-function init() {
+function findGround(pos) {
+    pos.y = -10000;
+    var raycaster = new THREE.Raycaster(pos, new THREE.Vector3(0, 1, 0));
+    var intersects = raycaster.intersectObject(scene, true);
+    if (intersects.length == 0) {
+        console.log('wtf');
+    } else {
+        pos.y = intersects[0].point.y;
+    }
+}
 
+function init() {
     container = document.getElementById( 'container' );
 
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 20000 );
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2( 0xbfd1e5, 0.0004 );
+    scene.fog = new THREE.FogExp2(bgColor, 0.0004 );
     //scene.fog = new THREE.FogExp2( 0xefd1b5, 0.0005 );
     //scene.fog = new THREE.Fog( 0xbfd1e5, 0, 1000);
 
@@ -51,23 +71,14 @@ function init() {
 
     addCell(0, 0);
 
+    // Set starting position
     camera.position.x = 0;
-    // very negative
-    camera.position.y = -10000;
     camera.position.z = 0;
-
-    // find ceiling
-    var raycaster = new THREE.Raycaster(camera.position, new THREE.Vector3(0, 1, 0));
-    var intersects = raycaster.intersectObject(scene, true);
-    if (intersects.length == 0) {
-        console.log('wtf');
-        camera.position.y = 3000;
-    } else {
-        camera.position.y = intersects[0].point.y + 200;
-    }
+    findGround(camera.position);
+    camera.position.y += 200;
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor( 0xbfd1e5 );
+    renderer.setClearColor( bgColor );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -80,9 +91,19 @@ function init() {
     stats.domElement.style.top = '0px';
     container.appendChild( stats.domElement );
 
-    //
-
     window.addEventListener( 'resize', onWindowResize, false );
+    sphereScene = new THREE.Object3D();
+    scene.add(sphereScene);
+    sphereOctree = new THREE.Octree({
+       undeferred: false,
+       depthMax: Infinity,
+       objectsThreshold: 8,
+       overlapPct: 0.15
+    });
+}
+
+function getXZ(vec) {
+    return new THREE.Vector2(vec.x, vec.z);
 }
 
 function addCell(iOff, jOff) {
@@ -127,34 +148,49 @@ function removeCell(i, j) {
 }
 
 function addSphere() {
-    var geometry = new THREE.SphereGeometry( 5, 320, 320 );
-    var material = new THREE.MeshLambertMaterial( {color: 0xffff00} );
-    var sphere = new THREE.Mesh( geometry, material );
-    sphere.translateY(1000);
-    //scene.add( sphere );
+    var sphere = new THREE.Object3D();
+
+    var geometry = new THREE.SphereGeometry(20, 32, 32);
+    var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+    var materialOutline = new THREE.MeshBasicMaterial( {color: 0x0, side: THREE.BackSide } );
+    var sphereBody = new THREE.Mesh( geometry, material );
+    var sphereOutline = new THREE.Mesh( geometry, materialOutline );
+    sphereOutline.scale.multiplyScalar(1.2);
+    sphere.add(sphereBody);
+    sphere.add(sphereOutline);
+
+    var disk;
+    var dir3 = camera.getWorldDirection();
+    var dir = new THREE.Vector2(dir3.x, dir3.z);
+    do {
+        disk = Random.disk(maxDist);
+    } while (dir.dot(disk) <= 0);
+    var offset = 1000;
+    sphere.position.x = camera.position.x + dir.x * offset + disk.x;
+    sphere.position.z = camera.position.z + dir.y * offset + disk.y;
+    findGround(sphere.position);
+    sphere.position.y += 500;
+    sphereScene.add(sphere);
+    sphereOctree.add(sphere);
+    return sphere;
 }
 
 function onWindowResize() {
-
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-
     renderer.setSize( window.innerWidth, window.innerHeight );
-
     controls.handleResize();
-
 }
 
 function generateHeight( width, height, iOff, jOff ) {
     var size = width * height, data = new Uint8Array( size ),
         perlin = new ImprovedNoise(), quality = 1;
     var z = seed;
-
     var iOff = iOff || 0;
     var jOff = jOff || 0;
     var globalOffset = 1e6;
-    iOff += 1000;
-    jOff += 1000;
+    iOff += 10000;
+    jOff += 10000;
 
     for ( var j = 0; j < 4; j ++ ) {
         for ( var i = 0; i < size; i ++ ) {
@@ -162,15 +198,11 @@ function generateHeight( width, height, iOff, jOff ) {
             x += iOff * (width - 1);
             y += jOff * (height - 1);
             data[ i ] += Math.abs( perlin.noise( x / quality, y / quality, z ) * quality * 1.75 );
-
         }
-
         quality *= 5;
 
     }
-
     return data;
-
 }
 
 function quantize(val, round) {
@@ -262,15 +294,13 @@ function generateTexture( data, width, height ) {
 
 }
 
-//
-
 var dead = false;
 function animate() {
     if (dead) return;
     requestAnimationFrame( animate );
+    frame++;
     render();
     stats.update();
-
 }
 
 function checkCollision() {
@@ -311,7 +341,7 @@ function loadCells() {
     for (var i = xMin; i <= xMax; i++) {
         for (var j = zMin; j <= zMax; j++) {
             if (!cells[[i, j]]) {
-                addCell(i, j);
+                setTimeout(addCell, 0, i, j);
             }
         }
     }
@@ -319,10 +349,24 @@ function loadCells() {
     cellZ = currZ;
 }
 
+function checkSphereCollision() {
+    var results = sphereOctree.search(camera.position, 0, true);
+    for (var i = 0; i < results.length; i++) {
+        var sphere = results[i].object;
+        if (camera.position.distanceTo(sphere.position) < 200) {
+            incrementScore();
+            sphereScene.remove(sphere);
+            sphereOctree.remove(sphere);
+        }
+    }
+}
+
 function render() {
     controls.update( clock.getDelta() );
     renderer.render( scene, camera );
+    sphereOctree.update();
     loadCells();
     checkCollision();
-    //window.setTimeout(loadCells, 0);
+    checkSphereCollision();
+    if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
