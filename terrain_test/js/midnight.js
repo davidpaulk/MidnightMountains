@@ -308,6 +308,8 @@ function checkCollision() {
     var raycaster = new THREE.Raycaster(nextPos, new THREE.Vector3(0, -1, 0));
     var intersects = raycaster.intersectObject(scene, true);
     if (intersects.length == 0) {
+        document.getElementById("music").pause();
+        document.getElementById("mariodeath").play();
         $("#dead").fadeIn(100, 'linear');
         dead = true;
     }
@@ -355,6 +357,7 @@ function checkSphereCollision() {
         var sphere = results[i].object;
         if (camera.position.distanceTo(sphere.position) < 200) {
             incrementScore();
+            document.getElementById("coin").play();
             sphereScene.remove(sphere);
             sphereOctree.remove(sphere);
         }
@@ -370,3 +373,11 @@ function render() {
     checkSphereCollision();
     if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
+
+var started = false;
+window.addEventListener("click", function() {
+    if (!started) {
+        document.getElementById("music").play();
+        started = true;
+    }
+});
