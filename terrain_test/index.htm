@@ -7,9 +7,10 @@
         <link href="./styles.css" rel="stylesheet" type="text/css" />
 	</head>
 	<body>
-		<div id="container"><br /><br /><br /><br /><br />Generating world...</div>
-        <div id="dead">You died!</div>
+		<div id="container" class="overlay"></div>
+        <div id="dead" class="overlay">You died!</div>
         <div id="scoreWrap">Score: <span id="score">0</span></div>
+        <div id="timeWrap">Time alive: <span id="time">0:00</span></div>
         <!-- Third party libraries -->
 		<script src="js/underscore-min.js"></script>
 		<script src="js/three.min.js"></script>
@@ -31,5 +32,10 @@
         <audio id="preload-music" loop src="sounds/music.mp3" preload="auto"></audio>
         <audio id="preload-coin" loop src="sounds/coin.mp3" preload="auto"></audio>
         <audio id="preload-mariodeath" src="sounds/dead.wav" preload="auto"></audio>
+
+        <div id="menu" class="overlay">
+            <h1>Midnight Mountains</h1>
+            <a href="javascript:start();" class="button">Play</a>
+        </div>
 	</body>
 </html>

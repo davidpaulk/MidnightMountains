@@ -17,6 +17,14 @@ var Utils = {
             return max;
         }
         return x;
+    },
+    getURL: function(url){
+        return $.ajax({
+            type: "GET",
+            url: url,
+            cache: false,
+            async: false
+        }).responseText;
     }
 }
 

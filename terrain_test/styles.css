@@ -1,48 +1,63 @@
 body {
-    color: #61443e;
-    font-family:Monospace;
-    font-size:13px;
+    color: #ddd;
+    font-family: Helvetica;
+    font-size: 16px;
     text-align:center;
-
-    background-color: #bfd1e5;
     margin: 0px;
+
     overflow: hidden;
-    }
+}
 
-        #info {
-            position: absolute;
-            top: 0px; width: 100%;
-            padding: 5px;
-        }
+.overlay {
+    position: absolute;
+    top: 0px; left: 0px;
+    width: 100%; height: 100%;
+}
 
-        #info {
-            position: absolute;
-            top: 0px; width: 100%;
-            padding: 5px;
-        }
+#menu {
+    padding-top: 15%;
+    background: #222;
+    display: none;
+}
 
-        #dead {
-            position: absolute;
-            top: 0px; right: 0px;
-            width: 100%; height: 100%;
-            color: white; background: #c23b22; font-weight: bold;
-            font-size: 30px;
-            padding-top: 20%;
-            display: none;
-        }
+#menu h1 {
+    margin-bottom: 1em;
+}
 
-        a {
-            color: #a06851;
-        }
+.button {
+    display: inline-block;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    padding: 5px 20px;
+    color: #ddd;
+    text-decoration: none;
+}
 
-        #scoreWrap {
-            position: absolute; top: 0px; right: 0px;
-            background: blue;
-            color: white;
-            opacity: 0.6;
-            padding: 5px;
-            font-size: 16px;
-        }
-        #score {
-            font-weight: bold;
-        }
+#dead {
+    padding-top: 20%;
+    color: white;
+    background: #c23b22;
+    font-weight: bold;
+    font-size: 30px;
+    display: none;
+}
+
+#scoreWrap {
+    position: absolute; top: 0px; right: 0px;
+    background: #222;
+    color: white;
+    opacity: 0.6;
+    padding: 5px;
+    font-size: 16px;
+}
+#timeWrap {
+    position: absolute; top: 0px; right: 100px;
+    background: #222;
+    color: white;
+    opacity: 0.6;
+    padding: 5px;
+    font-size: 16px;
+}
+#score, #time {
+    font-weight: bold;
+}

@@ -12,7 +12,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	this.enabled = true;
+	this.movementEnabled = true;
 
+    this.moving = false;
 	this.movementSpeed = 1.0;
 	this.fastSpeed = 1.0;
 	this.slowSpeed = 0.5;
@@ -92,7 +94,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		if ( this.activeLook ) {
 			switch ( event.button ) {
-				case 0: this.movementSpeed = this.fastSpeed; this.moveForward = true; break;
+				case 0: this.moving = true; this.movementSpeed = this.fastSpeed; this.moveForward = true; break;
 				//case 2: this.moveBackward = true; break;
 			}
 
@@ -205,6 +207,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 
 		var actualMoveSpeed = delta * this.movementSpeed;
+        if (!this.movementEnabled) actualMoveSpeed = 0;
 
 		// noise for "flutter effect" in flying (more-so random accelerations as of now)
 		// random perturbations vary speed by anywhere from -2 times to 4 times the original speed

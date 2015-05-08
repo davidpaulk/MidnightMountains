@@ -9,7 +9,8 @@ var Options = {
     //bgColor: 0xbfd1e5,
     bgColor: 0x111111,
     fastSpeed: 2000,
-    slowSpeed: 0
+    slowSpeed: 0,
+    lookSpeed: 0.2
 };
 // End parameters
 
@@ -37,14 +38,21 @@ var data;
 var light;
 var celShader;
 var sky;
+var startTime = null;
 
-$.get("shaders/cel.vs", function(data) {
-    celShader = data;
-    init();
-    animate();
-});
+init();
+animate();
+
+function start() {
+    $("#menu").fadeOut(500, function() {
+        controls.movementEnabled = true;
+        controls.lookSpeed = Options.lookSpeed;
+    });
+}
 
 function init() {
+    celShader = Utils.getURL("shaders/cel.vs");
+
     var container = document.getElementById('container');
 
     camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 20000);
@@ -56,7 +64,8 @@ function init() {
     controls = new THREE.FirstPersonControls(camera);
     controls.fastSpeed = Options.fastSpeed;
     controls.slowSpeed = Options.slowSpeed;
-    controls.lookSpeed = 0.2;
+    controls.lookSpeed = 0;
+    controls.movementEnabled = false;
 
     terrainScene = new THREE.Object3D();
     scene.add(terrainScene);
@@ -107,6 +116,10 @@ function init() {
     sky = new THREE.Mesh(skyGeometry, skyMaterial);
     sky.position.set(camera.position.x, 0, camera.position.z);
     scene.add(sky);
+
+    // TODO remove once the menu is enabled
+    controls.movementEnabled = true;
+    controls.lookSpeed = Options.lookSpeed;
 }
 
 function findGround(pos) {
@@ -396,6 +409,19 @@ function checkSphereCollision() {
 
 function render() {
     controls.update(clock.getDelta());
+    if (controls.moving && startTime === null) {
+        startTime = clock.getElapsedTime();
+    }
+    if (startTime !== null) {
+        var elapsed = clock.getElapsedTime() - startTime;
+        var minutes = Math.floor(elapsed / 60);
+        var seconds = Math.floor(elapsed % 60);
+        if (seconds < 10) {
+            seconds = "0" + seconds;
+        }
+        $("#time").text(minutes + ":" + seconds);
+    }
+
     renderer.render(scene, camera);
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
     sky.position.set(camera.position.x, camera.position.y, camera.position.z);
