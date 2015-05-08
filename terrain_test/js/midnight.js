@@ -37,11 +37,7 @@ var dead = false;
 var data;
 var light;
 var celShader;
-<<<<<<< Updated upstream
-var sky;
 var startTime = null;
-=======
->>>>>>> Stashed changes
 
 init();
 animate();
@@ -114,19 +110,10 @@ function init() {
     });
 
     backgroundMusic = Sound.play("./sounds/music.mp3");
-<<<<<<< Updated upstream
-
-    var skyGeometry = new THREE.SphereGeometry(maxDist * 2, 32, 32);
-    var skyMaterial = new THREE.MeshBasicMaterial({color: 0xff00, side: THREE.BackSide, fog: false});
-    sky = new THREE.Mesh(skyGeometry, skyMaterial);
-    sky.position.set(camera.position.x, 0, camera.position.z);
-    scene.add(sky);
 
     // TODO remove once the menu is enabled
     controls.movementEnabled = true;
     controls.lookSpeed = Options.lookSpeed;
-=======
->>>>>>> Stashed changes
 }
 
 function findGround(pos) {
