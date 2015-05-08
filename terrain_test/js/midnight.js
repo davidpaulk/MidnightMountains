@@ -144,6 +144,13 @@ function addCell(iOff, jOff) {
         vertices[j + 1] = data[i] * Options.heightMultiplier;
     }
 
+    /* David's texture code */
+    /*var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain.jpg" );
+    mountainTexture.wrapS = THREE.RepeatWrapping;
+    mountainTexture.wrapT = THREE.RepeatWrapping;
+    mountainTexture.repeat.set( 4, 4 );*/
+
+    //var texture = new THREE.Texture(mountainTexture);
     var texture = new THREE.Texture(generateTexture(data, Options.worldWidth, Options.worldDepth), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping);
     texture.needsUpdate = true;
 
@@ -321,6 +328,7 @@ function generateTexture(data, width, height) {
         imageData[i] = (96 + shade * 128) * (0.5 + data[j] * 0.007);
         imageData[i + 1] = (32 + shade * 96) * (0.5 + data[j] * 0.007);
         imageData[i + 2] = (shade * 96) * (0.5 + data[j] * 0.007);
+
     }
 
     context.putImageData(image, 0, 0);
@@ -435,6 +443,7 @@ function render() {
 function animate() {
     if (dead) return;
     requestAnimationFrame(animate);
+
     var texture = new THREE.Texture(generateTexture(data, Options.worldWidth, Options.worldDepth), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping);
     frame++;
     render();
