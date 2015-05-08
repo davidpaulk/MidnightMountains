@@ -27,6 +27,7 @@ var cellZ;
 var spheres = [];
 var maxDist = Options.cellSize * Options.cellRange;
 var frame = 0;
+var terrainScene;
 var sphereScene;
 var sphereOctree;
 var score = 0;
@@ -57,6 +58,8 @@ function init() {
     controls.slowSpeed = Options.slowSpeed;
     controls.lookSpeed = 0.2;
 
+    terrainScene = new THREE.Object3D();
+    scene.add(terrainScene);
     addCell(0, 0);
 
     // Set starting position
@@ -109,7 +112,7 @@ function init() {
 function findGround(pos) {
     pos.y = -10000;
     var raycaster = new THREE.Raycaster(pos, new THREE.Vector3(0, 1, 0));
-    var intersects = raycaster.intersectObject(scene, true);
+    var intersects = raycaster.intersectObject(terrainScene, true);
     if (intersects.length == 0) {
         console.log('no ground found');
     } else {
@@ -200,7 +203,7 @@ function addCell(iOff, jOff) {
     var cell = new THREE.Object3D();
     cell.add(mesh);
     cell.add(meshShadow);
-    scene.add(cell);
+    terrainScene.add(cell);
 
     cell.translateX(iOff * Options.cellSize);
     cell.translateZ(jOff * Options.cellSize);
@@ -213,7 +216,7 @@ function addCell(iOff, jOff) {
 function removeCell(i, j) {
     var cell = cells.remove(i, j);
     if (cell) {
-        scene.remove(cell);
+        terrainScene.remove(cell);
     }
 }
 
@@ -369,7 +372,7 @@ function loadCells() {
 function checkCollision() {
     var nextPos = camera.position.clone().add(camera.getWorldDirection().clone().normalize().multiplyScalar(50));
     var raycaster = new THREE.Raycaster(nextPos, new THREE.Vector3(0, -1, 0));
-    var intersects = raycaster.intersectObject(scene, true);
+    var intersects = raycaster.intersectObject(terrainScene, true);
     if (intersects.length == 0) {
         if (backgroundMusic) Sound.stop(backgroundMusic);
         Sound.play("./sounds/dead.wav");
