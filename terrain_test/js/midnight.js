@@ -355,7 +355,6 @@ function loadCells() {
 }
 
 function checkCollision() {
-    return;
     var nextPos = camera.position.clone().add(camera.getWorldDirection().clone().normalize().multiplyScalar(50));
     var raycaster = new THREE.Raycaster(nextPos, new THREE.Vector3(0, -1, 0));
     var intersects = raycaster.intersectObject(scene, true);
