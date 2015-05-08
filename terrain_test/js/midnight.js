@@ -1,78 +1,51 @@
 // Parameters
-var seed = Math.random() * 100;
-var heightMultiplier = 30;
-var worldWidth = worldDepth = 32;
-var cellSize = 1500;
-var cellRange = 4;
-//var bgColor = 0x222222;
-var bgColor = 0xbfd1e5;
-var numSpheres = 20;
-var fastSpeed = 2000;
-var slowSpeed = 1000;
-/*
-   var heightMultiplier = 20;
-   var worldWidth = worldDepth = 256;
-   var cellSize = 7500;
-   var cellRange = 1;
-   */
-
+var Options = {
+    seed: Math.random() * 100,
+    heightMultiplier: 30,
+    worldWidth: 32,
+    worldDepth: 32,
+    cellSize: 1500,
+    cellRange: 4,
+    bgColor: 0xbfd1e5,
+    fastSpeed: 2000,
+    slowSpeed: 1000
+};
 // End parameters
 
-if ( ! Detector.webgl ) {
+if (!Detector.webgl) {
     Detector.addGetWebGLMessage();
-    document.getElementById( 'container' ).innerHTML = "";
+    document.getElementById('container').innerHTML = "";
 }
 
-cellRange = cellRange * 2 + 1;
-var container, stats;
+var stats;
 var camera, controls, scene, renderer;
-var mesh, texture;
 var clock = new THREE.Clock();
-var cells = {};
+var cells = new Utils.PairMap();
 var cellX;
 var cellZ;
-var data;
 var spheres = [];
-var maxDist = cellSize * ((cellRange - 1) / 2);
+var maxDist = Options.cellSize * Options.cellRange;
 var frame = 0;
 var sphereScene;
 var sphereOctree;
 var score = 0;
-function incrementScore() {
-    score++;
-    $("#score").text(score);
-}
-
-// Music
 var backgroundMusic = null;
+var dead = false;
 
 init();
 animate();
 
-function findGround(pos) {
-    pos.y = -10000;
-    var raycaster = new THREE.Raycaster(pos, new THREE.Vector3(0, 1, 0));
-    var intersects = raycaster.intersectObject(scene, true);
-    if (intersects.length == 0) {
-        console.log('wtf');
-    } else {
-        pos.y = intersects[0].point.y;
-    }
-}
-
 function init() {
-    container = document.getElementById( 'container' );
+    var container = document.getElementById( 'container' );
 
     camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 20000 );
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(bgColor, 0.0004 );
-    //scene.fog = new THREE.FogExp2( 0xefd1b5, 0.0005 );
-    //scene.fog = new THREE.Fog( 0xbfd1e5, 0, 1000);
+    scene.fog = new THREE.FogExp2(Options.bgColor, 0.0004 );
 
     controls = new THREE.FirstPersonControls( camera );
-    controls.fastSpeed = fastSpeed;
-    controls.slowSpeed = slowSpeed;
+    controls.fastSpeed = Options.fastSpeed;
+    controls.slowSpeed = Options.slowSpeed;
     controls.lookSpeed = 0.2;
 
     addCell(0, 0);
@@ -84,7 +57,7 @@ function init() {
     camera.position.y += 200;
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor( bgColor );
+    renderer.setClearColor( Options.bgColor );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -101,34 +74,41 @@ function init() {
     sphereScene = new THREE.Object3D();
     scene.add(sphereScene);
     sphereOctree = new THREE.Octree({
-       undeferred: false,
-       depthMax: Infinity,
-       objectsThreshold: 8,
-       overlapPct: 0.15
+        undeferred: false,
+        depthMax: Infinity,
+        objectsThreshold: 8,
+        overlapPct: 0.15
     });
 
     backgroundMusic = Sound.play("./sounds/music.mp3");
 }
 
-function getXZ(vec) {
-    return new THREE.Vector2(vec.x, vec.z);
+function findGround(pos) {
+    pos.y = -10000;
+    var raycaster = new THREE.Raycaster(pos, new THREE.Vector3(0, 1, 0));
+    var intersects = raycaster.intersectObject(scene, true);
+    if (intersects.length == 0) {
+        console.log('no ground found');
+    } else {
+        pos.y = intersects[0].point.y;
+    }
 }
 
 function addCell(iOff, jOff) {
-    var data = generateHeight( worldWidth, worldDepth, iOff, jOff);
-    var geometry = new THREE.PlaneBufferGeometry( cellSize, cellSize, worldWidth - 1, worldDepth - 1 );
+    var data = generateHeight( Options.worldWidth, Options.worldDepth, iOff, jOff);
+    var geometry = new THREE.PlaneBufferGeometry( Options.cellSize, Options.cellSize, Options.worldWidth - 1, Options.worldDepth - 1 );
     geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
     var vertices = geometry.attributes.position.array;
 
     for ( var i = 0, j = 0, l = vertices.length; i < l; i ++, j += 3 ) {
-        vertices[ j + 1 ] = data[ i ] * heightMultiplier;
+        vertices[ j + 1 ] = data[ i ] * Options.heightMultiplier;
     }
 
-    texture = new THREE.Texture( generateTexture( data, worldWidth, worldDepth ), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping );
+    var texture = new THREE.Texture( generateTexture( data, Options.worldWidth, Options.worldDepth ), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping );
     texture.needsUpdate = true;
 
-    mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { map: texture } ) );
+    var mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { map: texture } ) );
 
     var meshShadow = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { map: texture, side:THREE.BackSide, color:0x0 } ) );
     meshShadow.scale.multiplyScalar(1.003);
@@ -138,21 +118,19 @@ function addCell(iOff, jOff) {
     cell.add(meshShadow);
     scene.add(cell);
 
-    cell.translateX(iOff * cellSize);
-    cell.translateZ(jOff * cellSize);
+    cell.translateX(iOff * Options.cellSize);
+    cell.translateZ(jOff * Options.cellSize);
 
-    cells[[iOff, jOff]] = cell;
+    cells.set(iOff, jOff, cell);
 
     return cell;
 }
 
 function removeCell(i, j) {
-    var cell = cells[[i, j]];
-    if (!cell) {
-        return;
+    var cell = cells.remove(i, j);
+    if (cell) {
+        scene.remove(cell);
     }
-    scene.remove(cell);
-    delete cells[[i, j]];
 }
 
 function addSphere() {
@@ -183,22 +161,15 @@ function addSphere() {
     return sphere;
 }
 
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    controls.handleResize();
-}
-
 function generateHeight( width, height, iOff, jOff ) {
     var size = width * height, data = new Uint8Array( size ),
         perlin = new ImprovedNoise(), quality = 1;
-    var z = seed;
+    var z = Options.seed;
     var iOff = iOff || 0;
     var jOff = jOff || 0;
     var globalOffset = 1e6;
-    iOff += 10000;
-    jOff += 10000;
+    iOff += globalOffset;
+    jOff += globalOffset;
 
     for ( var j = 0; j < 4; j ++ ) {
         for ( var i = 0; i < size; i ++ ) {
@@ -213,19 +184,9 @@ function generateHeight( width, height, iOff, jOff ) {
     return data;
 }
 
-function quantize(val, round) {
-    var rem = val % round;
-    if (rem < val / 2) {
-        return val - rem;
-    } else {
-        return val + round - rem;
-    }
-}
-
 function generateTexture( data, width, height ) {
-
     var canvas, canvasScaled, context, image, imageData,
-        level, diff, vector3, sun, shade;
+    level, diff, vector3, sun, shade;
 
     vector3 = new THREE.Vector3( 0, 0, 0 );
 
@@ -243,20 +204,11 @@ function generateTexture( data, width, height ) {
     image = context.getImageData( 0, 0, canvas.width, canvas.height );
     imageData = image.data;
 
-    function clamp(x, min, max) {
-        if (x < min) {
-            return min;
-        } else if (x > max) {
-            return max;
-        }
-        return x;
-    }
-
     for ( var i = 0, j = 0, l = imageData.length; i < l; i += 4, j ++ ) {
-        xMin = clamp(j - 2, 0, data.length - 1);
-        xMax = clamp(j + 2, 0, data.length - 1);
-        zMin = clamp(j - width * 2, 0, data.length - 1);
-        zMax = clamp(j + width * 2, 0, data.length - 1);
+        xMin = Utils.clamp(j - 2, 0, data.length - 1);
+        xMax = Utils.clamp(j + 2, 0, data.length - 1);
+        zMin = Utils.clamp(j - width * 2, 0, data.length - 1);
+        zMax = Utils.clamp(j + width * 2, 0, data.length - 1);
 
         vector3.x = data[ xMin ] - data[ xMax ];
         vector3.y = 2;
@@ -264,7 +216,7 @@ function generateTexture( data, width, height ) {
         vector3.normalize();
 
         shade = vector3.dot( sun );
-        shade = quantize(shade, 0.4);
+        shade = Utils.quantize(shade, 0.4);
 
         imageData[ i ] = ( 96 + shade * 128 ) * ( 0.5 + data[ j ] * 0.007 );
         imageData[ i + 1 ] = ( 32 + shade * 96 ) * ( 0.5 + data[ j ] * 0.007 );
@@ -274,7 +226,6 @@ function generateTexture( data, width, height ) {
     context.putImageData( image, 0, 0 );
 
     // Scaled 4x
-
     canvasScaled = document.createElement( 'canvas' );
     canvasScaled.width = width * 4;
     canvasScaled.height = height * 4;
@@ -287,28 +238,48 @@ function generateTexture( data, width, height ) {
     imageData = image.data;
 
     for ( var i = 0, l = imageData.length; i < l; i += 4 ) {
-
         var v = ~~ ( Math.random() * 5 );
 
         imageData[ i ] += v;
         imageData[ i + 1 ] += v;
         imageData[ i + 2 ] += v;
-
     }
 
     context.putImageData( image, 0, 0 );
 
     return canvasScaled;
-
 }
 
-var dead = false;
-function animate() {
-    if (dead) return;
-    requestAnimationFrame( animate );
-    frame++;
-    render();
-    stats.update();
+function loadCells() {
+    function posToCell(p) {
+        return Math.floor((p + Options.cellSize / 2) / Options.cellSize);
+    }
+    var range = Options.cellRange * 2 + 1;
+    var off = Options.cellRange;
+    var currX = posToCell(camera.position.x);
+    var currZ = posToCell(camera.position.z);
+    if (currX === cellX && currZ === cellZ) {
+        return;
+    }
+    var xMin = currX - off;
+    var xMax = currX + off;
+    var zMin = currZ - off;
+    var zMax = currZ + off;
+    cells.each(function(x, z) {
+        if (x < xMin || x > xMax ||
+            z < zMin || z > zMax) {
+            removeCell(x, z);
+        }
+    });
+    for (var i = xMin; i <= xMax; i++) {
+        for (var j = zMin; j <= zMax; j++) {
+            if (!cells.get(i, j)) {
+                setTimeout(addCell, 0, i, j);
+            }
+        }
+    }
+    cellX = currX;
+    cellZ = currZ;
 }
 
 function checkCollision() {
@@ -322,48 +293,13 @@ function checkCollision() {
     }
 }
 
-function loadCells() {
-    function posToCell(p) {
-        return Math.floor((p + cellSize / 2) / cellSize);
-    }
-    var range = cellRange;
-    var off = Math.floor(range / 2);
-    var currX = posToCell(camera.position.x);
-    var currZ = posToCell(camera.position.z);
-    if (currX === cellX && currZ === cellZ) {
-        return;
-    }
-    var xMin = currX - off;
-    var xMax = currX + off;
-    var zMin = currZ - off;
-    var zMax = currZ + off;
-    for (var key in cells) {
-        if (!cells.hasOwnProperty(key)) continue;
-        var split = key.split(",");
-        var x = parseInt(split[0]);
-        var z = parseInt(split[1]);
-        if (x < xMin || x > xMax ||
-                z < zMin || z > zMax) {
-            removeCell(x, z);
-        }
-    }
-    for (var i = xMin; i <= xMax; i++) {
-        for (var j = zMin; j <= zMax; j++) {
-            if (!cells[[i, j]]) {
-                setTimeout(addCell, 0, i, j);
-            }
-        }
-    }
-    cellX = currX;
-    cellZ = currZ;
-}
-
 function checkSphereCollision() {
     var results = sphereOctree.search(camera.position, 0, true);
     for (var i = 0; i < results.length; i++) {
         var sphere = results[i].object;
         if (camera.position.distanceTo(sphere.position) < 200) {
-            incrementScore();
+            score++;
+            $("#score").text(score);
             Sound.play('./sounds/coin.mp3');
             sphereScene.remove(sphere);
             sphereOctree.remove(sphere);
@@ -381,3 +317,17 @@ function render() {
     if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
 
+function animate() {
+    if (dead) return;
+    requestAnimationFrame( animate );
+    frame++;
+    render();
+    stats.update();
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    controls.handleResize();
+}
