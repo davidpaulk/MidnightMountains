@@ -10,6 +10,7 @@ var Options = {
     bgColor: 0x111111,
     fastSpeed: 2000,
     slowSpeed: 1000,
+    dayLength: 4.,
     lookSpeed: 0.2
 };
 // End parameters
@@ -433,7 +434,8 @@ function checkSphereCollision() {
 }
 
 function updateStars() {
-    var time = (clock.getElapsedTime() / 2 / Math.PI) % 2
+    var day = Options.dayLength;
+    var time = (clock.getElapsedTime() / day / Math.PI) % 2
     if (time < 1) {
         starScene.visible = false;
     } else if (1. < time && time < 1.1) {
@@ -444,29 +446,6 @@ function updateStars() {
         var b = 1. - (time - 1.9) / 0.1;
         starMaterial.color.setRGB(b, b, b);
     }
-    /*
-    console.log(time > 1);
-    if (time < 1 && starScene.children.length > 0) {
-        for (var i = 0; i < starScene.children.length; i++) {
-            starScene.remove(starScene.children[i]);
-        }
-    }
-    if (1.0 < time && time < 1.5) {
-        var pos = Random.sphere(10000);
-        if (pos.y < 0) {
-            pos.setY(-pos.y);
-        }
-        var geometry = new THREE.SphereGeometry(10, 16, 16);
-        var material = new THREE.MeshBasicMaterial({color: 0xffffff});
-        var sphereBody = new THREE.Mesh(geometry, material);
-        sphereBody.position.copy(pos);
-        starScene.add(sphereBody);
-    } else if (time > 1.5) {
-        if (starScene.children.length > 0) {
-            starScene.remove(starScene.children[0]);
-        }
-    }
-   */
 }
 
 function render() {
