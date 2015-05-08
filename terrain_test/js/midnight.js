@@ -78,7 +78,7 @@ function init() {
     camera.position.x = 0;
     camera.position.z = 0;
     findGround(camera.position);
-    camera.position.y += 200;
+    camera.position.y = 4000;
 
     var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
     directionalLight.position.set( 1, 1, 1 );
@@ -718,41 +718,9 @@ function initSky(){
     // Add Sun Helper
     sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
         new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-    sunSphere.visible = true;
-    scene.add( sunSphere );
-
-    var distance = 400000;
-
-    var uniforms = sky.uniforms;
-    uniforms.turbidity.value = 10;
-    uniforms.reileigh.value = 2;
-    uniforms.luminance.value = 1;
-    uniforms.mieCoefficient.value = 0.005;
-    uniforms.mieDirectionalG.value = 0.8;
-
-    var theta = Math.PI * (0.49 - 0.5);
-    var phi = 2 * Math.PI * (0.25 - 0.5);
-
-    sunSphere.position.x = distance * Math.cos(phi);
-    sunSphere.position.y = distance * Math.sin(phi) * Math.sin(theta);
-    sunSphere.position.z = distance * Math.sin(phi) * Math.cos(theta);
-
-    sunSphere.visible = true;
-}
-
-function initSky(){
-
-    // Add Sky Mesh
-    sky = new THREE.Sky();
-    scene.add( sky.mesh );
-
-
-    // Add Sun Helper
-    sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
-        new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-    sunSphere.position.y = -700000;
-    sunSphere.visible = true;
-    scene.add( sunSphere );
+    //sunSphere.position.y = -700000;
+    //sunSphere.visible = true;
+    //scene.add( sunSphere );
 
     /// GUI
 
@@ -788,9 +756,10 @@ function initSky(){
 }
 
 function updateSunPosition() {
-    sunSphere.position.x = clock.getElapsedTime() * 10000000;
-    sunSphere.position.y = clock.getElapsedTime() * 10000000;
-    sunSphere.position.z = 100000;
+    var time = clock.getElapsedTime();
+    sunSphere.position.x = 0;
+    sunSphere.position.y = Math.sin(time) * 4500;
+    sunSphere.position.z = Math.cos(time) * 4500;
     sunlight.position = sunSphere.position;
-    console.log(sunSphere.position);
+    sky.uniforms.sunPosition.value.copy(sunSphere.position);
 }
