@@ -1,11 +1,11 @@
 // Parameters
 var Options = {
-    seed: Math.random() * 100,
+    seed: Math.random() * 150,
     heightMultiplier: 30,
     worldWidth: 32,
     worldDepth: 32,
     cellSize: 1500,
-    cellRange: 6,
+    cellRange: 8,
     //bgColor: 0xbfd1e5,
     bgColor: 0x111111,
     fastSpeed: 2000,
@@ -42,11 +42,10 @@ var data;
 var light;
 var celShader;
 var startTime = null;
-var sunlight = new THREE.DirectionalLight( 0xffffff, 1 );
+var sunlight = new THREE.DirectionalLight( 0xffffff, 1.5 );
 var sky;
 var sunSphere;
 var originalpos = new THREE.Vector3(0, 0, 0);
-var moonSphere;
 var uniforms;
 var day = true;
 var mountainMaterial;
@@ -262,7 +261,7 @@ function addSphere() {
     var sphere = new THREE.Object3D();
 
     var geometry = new THREE.SphereGeometry(20, 32, 32);
-    var material = new THREE.MeshBasicMaterial({color: 0xffff00});
+    var material = new THREE.MeshPhongMaterial({color: 0xffff00});
     var materialOutline = new THREE.MeshBasicMaterial({color: 0x0, side: THREE.BackSide });
     var sphereBody = new THREE.Mesh(geometry, material);
     var sphereOutline = new THREE.Mesh(geometry, materialOutline);
@@ -756,13 +755,6 @@ function initSky(){
     // Add Sun Helper
     sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
         new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-
-    moonSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
-        new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-    //sunSphere.position.y = -700000;
-    //sunSphere.visible = true;
-    //scene.add( sunSphere );
-
     /// GUI
 
     var effectController  = {
@@ -774,16 +766,6 @@ function initSky(){
         inclination: 0.49, // elevation / inclination
         azimuth: 0.25, // Facing front,
     }
-
-    // var effectController  = {
-    //     turbidity: 1,
-    //     reileigh: 0,
-    //     mieCoefficient: 0.0001,
-    //     mieDirectionalG: 0.99,
-    //     luminance: 1.1,
-    //     inclination: 0.49, // elevation / inclination
-    //     azimuth: 0.25, // Facing front,
-    // }
 
     var distance = 400000;
 
@@ -811,10 +793,13 @@ function initSky(){
 
 function updateSunPosition() {
     var time = dayclock.getElapsedTime();
+    var a = 10.0;
     if (day) {
-        if (Math.sin(time/4.0) < 0.0) {
+        if (Math.sin(time/a) < 0.0) {
             day = false;
             dayclock = new THREE.Clock();
+            sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 10000000000000, 30, 30 ),
+                new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
             var effectController  = {
                 turbidity: 1,
                 reileigh: 0,
@@ -831,19 +816,23 @@ function updateSunPosition() {
             uniforms.mieCoefficient.value = effectController.mieCoefficient;
             uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
             sunlight.position.copy(originalpos);
+            sunlight.intensity = .5 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
             return;
         }
+        sunlight.intensity = 1.6 * Math.sin(time/a);
         sunSphere.position.x = 0;
-        sunSphere.position.y = Math.sin(time/4.0);
-        sunSphere.position.z = Math.cos(time/4.0);
-        sunlight.position.set(0, Math.sin(time/4.0), Math.cos(time/4.0));
+        sunSphere.position.y = Math.sin(time/a);
+        sunSphere.position.z = Math.cos(time/a);
+        sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
         sky.uniforms.sunPosition.value.copy(sunSphere.position);
     }
     else {
-        if (Math.sin(time/4.0) < 0.0) {
+        if (Math.sin(time/a) < 0.0) {
             day = true;
             dayclock = new THREE.Clock();
+            sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
+                new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
             var effectController  = {
                 turbidity: 4,
                 reileigh: 2,
@@ -859,12 +848,17 @@ function updateSunPosition() {
             uniforms.luminance.value = effectController.luminance;
             uniforms.mieCoefficient.value = effectController.mieCoefficient;
             uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
+            sunlight.position.copy(originalpos);
+            sunlight.intensity = 1.6 * Math.sin(time/a)
+            sky.uniforms.sunPosition.value.copy(sunSphere.position);
+            return;
             return;
         }
+        sunlight.intensity = .5 * Math.sin(time/a)
         sunSphere.position.x = 0;
-        sunSphere.position.y = Math.sin(time/4.0);
-        sunSphere.position.z = Math.cos(time/4.0);
-        sunlight.position.set(0, Math.cos(time/4.0), Math.sin(time/4.0));
+        sunSphere.position.y = Math.sin(time/a);
+        sunSphere.position.z = Math.cos(time/a);
+        sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
         sky.uniforms.sunPosition.value.copy(sunSphere.position);
     }
 }
