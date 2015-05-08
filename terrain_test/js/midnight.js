@@ -6,9 +6,10 @@ var Options = {
     worldDepth: 32,
     cellSize: 1500,
     cellRange: 4,
-    bgColor: 0xbfd1e5,
+    //bgColor: 0xbfd1e5,
+    bgColor: 0x111111,
     fastSpeed: 2000,
-    slowSpeed: 1000
+    slowSpeed: 0
 };
 // End parameters
 
@@ -31,6 +32,8 @@ var sphereOctree;
 var score = 0;
 var backgroundMusic = null;
 var dead = false;
+var data;
+var light;
 
 init();
 animate();
@@ -41,7 +44,8 @@ function init() {
     camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 20000);
 
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(Options.bgColor, 0.0004);
+    //scene.fog = new THREE.FogExp2(Options.bgColor, 0.0004);
+    scene.fog = new THREE.Fog(Options.bgColor, maxDist * 3 / 4, maxDist);
 
     controls = new THREE.FirstPersonControls(camera);
     controls.fastSpeed = Options.fastSpeed;
@@ -55,6 +59,14 @@ function init() {
     camera.position.z = 0;
     findGround(camera.position);
     camera.position.y += 200;
+
+    var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
+    directionalLight.position.set( 1, 1, 1 );
+    //scene.add( directionalLight );
+
+    light = new THREE.PointLight( 0xffffff, 2, 6000 );
+    light.position.set(0,2000,0);
+    scene.add(light);
 
     renderer = new THREE.WebGLRenderer();
     renderer.setClearColor(Options.bgColor);
@@ -95,7 +107,7 @@ function findGround(pos) {
 }
 
 function addCell(iOff, jOff) {
-    var data = generateHeight(Options.worldWidth, Options.worldDepth, iOff, jOff);
+    data = generateHeight(Options.worldWidth, Options.worldDepth, iOff, jOff);
     var geometry = new THREE.PlaneBufferGeometry(Options.cellSize, Options.cellSize, Options.worldWidth - 1, Options.worldDepth - 1);
     geometry.applyMatrix(new THREE.Matrix4().makeRotationX(- Math.PI / 2));
 
@@ -108,9 +120,69 @@ function addCell(iOff, jOff) {
     var texture = new THREE.Texture(generateTexture(data, Options.worldWidth, Options.worldDepth), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping);
     texture.needsUpdate = true;
 
-    var mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture }));
+    geometry.computeVertexNormals();
 
-    var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture, side:THREE.BackSide, color:0x0 }));
+    var lambertShader = THREE.ShaderLib['lambert'];
+    var uniforms = THREE.UniformsUtils.clone(lambertShader.uniforms);
+    // TODO figure out wtf is going on here
+    uniforms["myColor"] = { type: "c", value: new THREE.Color(0x663300) };
+    var material = new THREE.ShaderMaterial({
+        defines: {"USE_COLOR": ""},
+        uniforms: uniforms,
+        vertexColors: THREE.VertexColors,
+        vertexShader: [
+            "#define LAMBERT",
+            "#define USE_COLOR",
+            "varying vec3 vLightFront;",
+            "uniform vec3 myColor;",
+            "#ifdef DOUBLE_SIDED",
+            "   varying vec3 vLightBack;",
+            "#endif",
+            THREE.ShaderChunk[ "common" ],
+            THREE.ShaderChunk[ "map_pars_vertex" ],
+            THREE.ShaderChunk[ "lightmap_pars_vertex" ],
+            THREE.ShaderChunk[ "envmap_pars_vertex" ],
+            THREE.ShaderChunk[ "lights_lambert_pars_vertex" ],
+            THREE.ShaderChunk[ "color_pars_vertex" ],
+            THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
+            THREE.ShaderChunk[ "skinning_pars_vertex" ],
+            THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
+            THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
+            "void main() {",
+
+                THREE.ShaderChunk[ "map_vertex" ],
+                THREE.ShaderChunk[ "lightmap_vertex" ],
+                //THREE.ShaderChunk[ "color_vertex" ],
+                "vColor.xyz = inputToLinear( myColor.xyz );",
+
+                THREE.ShaderChunk[ "morphnormal_vertex" ],
+                THREE.ShaderChunk[ "skinbase_vertex" ],
+                THREE.ShaderChunk[ "skinnormal_vertex" ],
+                THREE.ShaderChunk[ "defaultnormal_vertex" ],
+
+                THREE.ShaderChunk[ "morphtarget_vertex" ],
+                THREE.ShaderChunk[ "skinning_vertex" ],
+                THREE.ShaderChunk[ "default_vertex" ],
+                THREE.ShaderChunk[ "logdepthbuf_vertex" ],
+
+                THREE.ShaderChunk[ "worldpos_vertex" ],
+                THREE.ShaderChunk[ "envmap_vertex" ],
+                document.getElementById('shader').text, //THREE.ShaderChunk[ "lights_lambert_vertex" ],
+                THREE.ShaderChunk[ "shadowmap_vertex" ],
+
+            "}"
+
+        ].join("\n"),
+
+        fragmentShader: "#define USE_COLOR\n"+lambertShader.fragmentShader,
+        lights:true,
+        fog: true
+    });
+    //var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
+    //var material = new THREE.MeshBasicMaterial({ map: texture });
+    var mesh = new THREE.Mesh(geometry, material);
+
+    var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
     meshShadow.scale.multiplyScalar(1.003);
 
     var cell = new THREE.Object3D();
@@ -283,6 +355,7 @@ function loadCells() {
 }
 
 function checkCollision() {
+    return;
     var nextPos = camera.position.clone().add(camera.getWorldDirection().clone().normalize().multiplyScalar(50));
     var raycaster = new THREE.Raycaster(nextPos, new THREE.Vector3(0, -1, 0));
     var intersects = raycaster.intersectObject(scene, true);
@@ -310,6 +383,7 @@ function checkSphereCollision() {
 function render() {
     controls.update(clock.getDelta());
     renderer.render(scene, camera);
+    light.position.set(camera.position.x, camera.position.y, camera.position.z);
     sphereOctree.update();
     loadCells();
     checkCollision();
@@ -320,6 +394,7 @@ function render() {
 function animate() {
     if (dead) return;
     requestAnimationFrame(animate);
+    var texture = new THREE.Texture(generateTexture(data, Options.worldWidth, Options.worldDepth), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping);
     frame++;
     render();
     stats.update();
