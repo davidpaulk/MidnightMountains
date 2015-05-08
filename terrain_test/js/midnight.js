@@ -139,14 +139,12 @@ function addCell(iOff, jOff) {
     }
 
     /* David's texture code */
-    /*var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain.jpg" );
-    mountainTexture.wrapS = THREE.RepeatWrapping;
-    mountainTexture.wrapT = THREE.RepeatWrapping;
-    mountainTexture.repeat.set( 4, 4 );*/
+    var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
+    mountainTexture.needsUpdate = true;
 
     //var texture = new THREE.Texture(mountainTexture);
-    var texture = new THREE.Texture(generateTexture(data, Options.worldWidth, Options.worldDepth), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping);
-    texture.needsUpdate = true;
+    //var texture = new THREE.Texture(generateTexture(data, Options.worldWidth, Options.worldDepth), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping);
+    //texture.needsUpdate = true;
 
     geometry.computeVertexNormals();
 
@@ -154,7 +152,7 @@ function addCell(iOff, jOff) {
     var uniforms = THREE.UniformsUtils.clone(lambertShader.uniforms);
     // TODO figure out wtf is going on here
     uniforms["myColor"] = { type: "c", value: new THREE.Color(0x774400) };
-    var material = new THREE.ShaderMaterial({
+    /*var material = new THREE.ShaderMaterial({
         defines: {"USE_COLOR": ""},
         uniforms: uniforms,
         vertexColors: THREE.VertexColors,
@@ -206,12 +204,13 @@ function addCell(iOff, jOff) {
         fragmentShader: "#define USE_COLOR\n"+lambertShader.fragmentShader,
         lights:true,
         fog: true
-    });
-    //var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
-    //var material = new THREE.MeshBasicMaterial({ map: texture });
+    });*/
+    var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
+    var material = new THREE.MeshPhongMaterial({ map: mountainTexture });
+    material.normalMap = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
     var mesh = new THREE.Mesh(geometry, material);
 
-    var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
+    var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: mountainTexture, side:THREE.BackSide, color:0x0 }));
     meshShadow.scale.multiplyScalar(1.003);
 
     var cell = new THREE.Object3D();
