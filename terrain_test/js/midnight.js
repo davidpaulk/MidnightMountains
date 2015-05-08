@@ -46,6 +46,7 @@ var originalpos = new THREE.Vector3(0, 0, 0);
 var moonSphere;
 var uniforms;
 var day = true;
+var mountainMaterial;
 
 init();
 animate();
@@ -74,6 +75,11 @@ function init() {
     controls.slowSpeed = Options.slowSpeed;
     controls.lookSpeed = 0;
     controls.movementEnabled = false;
+
+    /* David's texture code */
+    var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
+    mountainMaterial = new THREE.MeshLambertMaterial({ map: mountainTexture });
+    mountainMaterial.normalMap = THREE.ImageUtils.loadTexture( "js/textures/mountain_2_normal.jpg" ).rgb;
 
     terrainScene = new THREE.Object3D();
     scene.add(terrainScene);
@@ -146,10 +152,6 @@ function addCell(iOff, jOff) {
         vertices[j + 1] = data[i] * Options.heightMultiplier;
     }
 
-    /* David's texture code */
-    var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
-    mountainTexture.needsUpdate = true;
-
     //var texture = new THREE.Texture(mountainTexture);
     //var texture = new THREE.Texture(generateTexture(data, Options.worldWidth, Options.worldDepth), THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping);
     //texture.needsUpdate = true;
@@ -213,12 +215,10 @@ function addCell(iOff, jOff) {
         lights:true,
         fog: true
     });*/
-    var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
-    var material = new THREE.MeshLambertMaterial({ map: mountainTexture });
-    material.normalMap = THREE.ImageUtils.loadTexture( "js/textures/mountain_2_normal.jpg" ).rgb;
-    var mesh = new THREE.Mesh(geometry, material);
+    //var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
+    var mesh = new THREE.Mesh(geometry, mountainMaterial);
 
-    var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: mountainTexture, side:THREE.BackSide, color:0x0 }));
+    var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
     meshShadow.scale.multiplyScalar(1.003);
 
     var cell = new THREE.Object3D();
