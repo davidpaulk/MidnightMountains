@@ -34,9 +34,13 @@ var backgroundMusic = null;
 var dead = false;
 var data;
 var light;
+var celShader;
 
-init();
-animate();
+$.get("shaders/cel.vs", function(data) {
+    celShader = data;
+    init();
+    animate();
+});
 
 function init() {
     var container = document.getElementById('container');
@@ -167,7 +171,8 @@ function addCell(iOff, jOff) {
 
                 THREE.ShaderChunk[ "worldpos_vertex" ],
                 THREE.ShaderChunk[ "envmap_vertex" ],
-                document.getElementById('shader').text, //THREE.ShaderChunk[ "lights_lambert_vertex" ],
+                celShader,
+                // document.getElementById('shader').text, //THREE.ShaderChunk[ "lights_lambert_vertex" ],
                 THREE.ShaderChunk[ "shadowmap_vertex" ],
 
             "}"
