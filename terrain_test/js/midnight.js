@@ -9,7 +9,7 @@ var Options = {
     //bgColor: 0xbfd1e5,
     bgColor: 0x111111,
     fastSpeed: 2000,
-    slowSpeed: 0,
+    slowSpeed: 1000,
     lookSpeed: 0.2
 };
 // End parameters
