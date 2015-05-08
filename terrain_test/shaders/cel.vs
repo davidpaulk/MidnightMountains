@@ -7,7 +7,7 @@ vLightFront = vec3( 0.0 );
 #endif
 
 transformedNormal = normalize( transformedNormal );
-float quantization = 2.;
+float quantization = 4.;
 
 #if MAX_DIR_LIGHTS > 0
 

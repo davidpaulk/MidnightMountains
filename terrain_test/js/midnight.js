@@ -35,6 +35,7 @@ var dead = false;
 var data;
 var light;
 var celShader;
+var sky;
 
 $.get("shaders/cel.vs", function(data) {
     celShader = data;
@@ -97,6 +98,12 @@ function init() {
     });
 
     backgroundMusic = Sound.play("./sounds/music.mp3");
+
+    var skyGeometry = new THREE.SphereGeometry(maxDist * 2, 32, 32);
+    var skyMaterial = new THREE.MeshBasicMaterial({color: 0xff00, side: THREE.BackSide, fog: false});
+    sky = new THREE.Mesh(skyGeometry, skyMaterial);
+    sky.position.set(camera.position.x, 0, camera.position.z);
+    scene.add(sky);
 }
 
 function findGround(pos) {
@@ -129,7 +136,7 @@ function addCell(iOff, jOff) {
     var lambertShader = THREE.ShaderLib['lambert'];
     var uniforms = THREE.UniformsUtils.clone(lambertShader.uniforms);
     // TODO figure out wtf is going on here
-    uniforms["myColor"] = { type: "c", value: new THREE.Color(0x663300) };
+    uniforms["myColor"] = { type: "c", value: new THREE.Color(0x774400) };
     var material = new THREE.ShaderMaterial({
         defines: {"USE_COLOR": ""},
         uniforms: uniforms,
@@ -388,6 +395,7 @@ function render() {
     controls.update(clock.getDelta());
     renderer.render(scene, camera);
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
+    sky.position.set(camera.position.x, camera.position.y, camera.position.z);
     sphereOctree.update();
     loadCells();
     checkCollision();
