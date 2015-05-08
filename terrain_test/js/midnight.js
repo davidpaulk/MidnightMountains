@@ -142,7 +142,7 @@ function addCell(iOff, jOff) {
     }
 
     /* David's texture code */
-    var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
+    var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_5.jpg" );
     mountainTexture.needsUpdate = true;
 
     //var texture = new THREE.Texture(mountainTexture);
@@ -210,7 +210,7 @@ function addCell(iOff, jOff) {
     });*/
     var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
     var material = new THREE.MeshPhongMaterial({ map: mountainTexture });
-    material.normalMap = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
+    material.normalMap = THREE.ImageUtils.loadTexture( "js/textures/mountain_5_normal.jpg" ).rgb;
     var mesh = new THREE.Mesh(geometry, material);
 
     var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: mountainTexture, side:THREE.BackSide, color:0x0 }));
