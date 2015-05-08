@@ -31,6 +31,8 @@ var frame = 0;
 var terrainScene;
 var sphereScene;
 var sphereOctree;
+var starScene;
+var starMaterial;
 var score = 0;
 var backgroundMusic = null;
 var dead = false;
@@ -111,6 +113,20 @@ function init() {
         objectsThreshold: 8,
         overlapPct: 0.15
     });
+    
+    starScene = new THREE.Object3D();
+    starMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+    for (var i = 0; i < 100; i++) {
+        var pos = Random.sphere(10000);
+        if (pos.y < 0) {
+            pos.setY(-pos.y);
+        }
+        var geometry = new THREE.SphereGeometry(5 + Math.random() * 10, 8, 8);
+        var sphereBody = new THREE.Mesh(geometry, starMaterial);
+        sphereBody.position.copy(pos);
+        starScene.add(sphereBody);
+    }
+    scene.add(starScene);
 
     backgroundMusic = Sound.play("./sounds/music.mp3");
 
@@ -412,6 +428,43 @@ function checkSphereCollision() {
     }
 }
 
+function updateStars() {
+    var time = (clock.getElapsedTime() / 2 / Math.PI) % 2
+    if (time < 1) {
+        starScene.visible = false;
+    } else if (1. < time && time < 1.1) {
+        var b = (time - 1.) / 0.1;
+        starScene.visible = true;
+        starMaterial.color.setRGB(b, b, b);
+    } else if (1.9 < time && time < 2.) {
+        var b = 1. - (time - 1.9) / 0.1;
+        starMaterial.color.setRGB(b, b, b);
+    }
+    /*
+    console.log(time > 1);
+    if (time < 1 && starScene.children.length > 0) {
+        for (var i = 0; i < starScene.children.length; i++) {
+            starScene.remove(starScene.children[i]);
+        }
+    }
+    if (1.0 < time && time < 1.5) {
+        var pos = Random.sphere(10000);
+        if (pos.y < 0) {
+            pos.setY(-pos.y);
+        }
+        var geometry = new THREE.SphereGeometry(10, 16, 16);
+        var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+        var sphereBody = new THREE.Mesh(geometry, material);
+        sphereBody.position.copy(pos);
+        starScene.add(sphereBody);
+    } else if (time > 1.5) {
+        if (starScene.children.length > 0) {
+            starScene.remove(starScene.children[0]);
+        }
+    }
+   */
+}
+
 function render() {
     controls.update(clock.getDelta());
     if (controls.moving && startTime === null) {
@@ -429,12 +482,14 @@ function render() {
 
     renderer.render(scene, camera);
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
+    starScene.position.set(camera.position.x, camera.position.y + 500, camera.position.z);
     sphereOctree.update();
     loadCells();
     checkCollision();
     checkSphereCollision();
     updateSunPosition();
-    if (frame % 32 === 0) setTimeout(addSphere, 0);
+    updateStars();
+    //if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
 
 function animate() {
@@ -758,8 +813,8 @@ function initSky(){
 function updateSunPosition() {
     var time = clock.getElapsedTime();
     sunSphere.position.x = 0;
-    sunSphere.position.y = Math.sin(time) * 4500;
-    sunSphere.position.z = Math.cos(time) * 4500;
+    sunSphere.position.y = Math.sin(time / 2.) * 4500;
+    sunSphere.position.z = Math.cos(time / 2.) * 4500;
     sunlight.position = sunSphere.position;
     sky.uniforms.sunPosition.value.copy(sunSphere.position);
 }
