@@ -5,7 +5,7 @@ var Options = {
     worldWidth: 32,
     worldDepth: 32,
     cellSize: 1500,
-    cellRange: 4,
+    cellRange: 6,
     //bgColor: 0xbfd1e5,
     bgColor: 0x111111,
     fastSpeed: 2000,
@@ -38,6 +38,9 @@ var data;
 var light;
 var celShader;
 var startTime = null;
+var sunlight = new THREE.DirectionalLight( 0xffffff, 1 );
+var sky;
+var sunSphere;
 
 init();
 animate();
@@ -59,7 +62,7 @@ function init() {
     scene = new THREE.Scene();
     initSky();
     //scene.fog = new THREE.FogExp2(Options.bgColor, 0.0004);
-    scene.fog = new THREE.Fog(Options.bgColor, maxDist * 3 / 4, maxDist);
+    // scene.fog = new THREE.Fog(Options.bgColor, maxDist * 3 / 4, maxDist);
 
     controls = new THREE.FirstPersonControls(camera);
     controls.fastSpeed = Options.fastSpeed;
@@ -430,6 +433,7 @@ function render() {
     loadCells();
     checkCollision();
     checkSphereCollision();
+    updateSunPosition();
     if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
 
@@ -736,8 +740,6 @@ function initSky(){
     sunSphere.visible = true;
 }
 
-var sky, sunSphere;
-
 function initSky(){
 
     // Add Sky Mesh
@@ -783,4 +785,12 @@ function initSky(){
     sunSphere.visible = false;
 
     sky.uniforms.sunPosition.value.copy(sunSphere.position);
+}
+
+function updateSunPosition() {
+    sunSphere.position.x = clock.getElapsedTime() * 10000000;
+    sunSphere.position.y = clock.getElapsedTime() * 10000000;
+    sunSphere.position.z = 100000;
+    sunlight.position = sunSphere.position;
+    console.log(sunSphere.position);
 }
