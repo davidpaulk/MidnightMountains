@@ -5,7 +5,7 @@ var Options = {
     worldWidth: 32,
     worldDepth: 32,
     cellSize: 1500,
-    cellRange: 4,
+    cellRange: 6,
     //bgColor: 0xbfd1e5,
     bgColor: 0x111111,
     fastSpeed: 2000,
@@ -38,6 +38,9 @@ var data;
 var light;
 var celShader;
 var startTime = null;
+var sunlight = new THREE.DirectionalLight( 0xffffff, 1 );
+var sky;
+var sunSphere;
 
 init();
 animate();
@@ -59,7 +62,7 @@ function init() {
     scene = new THREE.Scene();
     initSky();
     //scene.fog = new THREE.FogExp2(Options.bgColor, 0.0004);
-    scene.fog = new THREE.Fog(Options.bgColor, maxDist * 3 / 4, maxDist);
+    // scene.fog = new THREE.Fog(Options.bgColor, maxDist * 3 / 4, maxDist);
 
     controls = new THREE.FirstPersonControls(camera);
     controls.fastSpeed = Options.fastSpeed;
@@ -75,7 +78,7 @@ function init() {
     camera.position.x = 0;
     camera.position.z = 0;
     findGround(camera.position);
-    camera.position.y += 200;
+    camera.position.y = 4000;
 
     var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
     directionalLight.position.set( 1, 1, 1 );
@@ -429,6 +432,7 @@ function render() {
     loadCells();
     checkCollision();
     checkSphereCollision();
+    updateSunPosition();
     if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
 
@@ -713,43 +717,9 @@ function initSky(){
     // Add Sun Helper
     sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
         new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-    sunSphere.visible = true;
-    scene.add( sunSphere );
-
-    var distance = 400000;
-
-    var uniforms = sky.uniforms;
-    uniforms.turbidity.value = 10;
-    uniforms.reileigh.value = 2;
-    uniforms.luminance.value = 1;
-    uniforms.mieCoefficient.value = 0.005;
-    uniforms.mieDirectionalG.value = 0.8;
-
-    var theta = Math.PI * (0.49 - 0.5);
-    var phi = 2 * Math.PI * (0.25 - 0.5);
-
-    sunSphere.position.x = distance * Math.cos(phi);
-    sunSphere.position.y = distance * Math.sin(phi) * Math.sin(theta);
-    sunSphere.position.z = distance * Math.sin(phi) * Math.cos(theta);
-
-    sunSphere.visible = true;
-}
-
-var sky, sunSphere;
-
-function initSky(){
-
-    // Add Sky Mesh
-    sky = new THREE.Sky();
-    scene.add( sky.mesh );
-
-
-    // Add Sun Helper
-    sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
-        new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-    sunSphere.position.y = -700000;
-    sunSphere.visible = true;
-    scene.add( sunSphere );
+    //sunSphere.position.y = -700000;
+    //sunSphere.visible = true;
+    //scene.add( sunSphere );
 
     /// GUI
 
@@ -781,5 +751,14 @@ function initSky(){
 
     sunSphere.visible = false;
 
+    sky.uniforms.sunPosition.value.copy(sunSphere.position);
+}
+
+function updateSunPosition() {
+    var time = clock.getElapsedTime();
+    sunSphere.position.x = 0;
+    sunSphere.position.y = Math.sin(time) * 4500;
+    sunSphere.position.z = Math.cos(time) * 4500;
+    sunlight.position = sunSphere.position;
     sky.uniforms.sunPosition.value.copy(sunSphere.position);
 }
