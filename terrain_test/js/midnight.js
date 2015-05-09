@@ -25,6 +25,7 @@ var camera, controls, scene, renderer;
 var clock = new THREE.Clock();
 var dayclock = new THREE.Clock();
 var cells = new Utils.PairMap();
+var shadows = new Utils.PairMap();
 var cellX;
 var cellZ;
 var spheres = [];
@@ -192,23 +193,26 @@ function addCell(iOff, jOff) {
     //var mesh = new THREE.Mesh(geometry, material);
 
     var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
-    meshShadow.scale.multiplyScalar(1.003);
+    meshShadow.visible = false;
+    meshShadow.scale.multiplyScalar(1.01);
 
     var cell = new THREE.Object3D();
     cell.add(mesh);
-    //cell.add(meshShadow);
+    cell.add(meshShadow);
     terrainScene.add(cell);
 
     cell.translateX(iOff * Options.cellSize);
     cell.translateZ(jOff * Options.cellSize);
 
     cells.set(iOff, jOff, cell);
+    shadows.set(iOff, jOff, meshShadow);
 
     return cell;
 }
 
 function removeCell(i, j) {
     var cell = cells.remove(i, j);
+    shadows.remove(i, j);
     if (cell) {
         terrainScene.remove(cell);
     }
@@ -286,6 +290,15 @@ function loadCells() {
             removeCell(x, z);
         }
     });
+    var shadowRange = Math.floor(off / 2);
+    shadows.each(function(x, z, shadow) {
+        if (x >= currX - shadowRange && x <= currX + shadowRange &&
+            z >= currZ - shadowRange && z <= currZ + shadowRange) {
+            shadow.visible = true;
+        } else {
+            shadow.visible = false;
+        }
+    });
     for (var i = xMin; i <= xMax; i++) {
         for (var j = zMin; j <= zMax; j++) {
             if (!cells.get(i, j)) {
@@ -361,7 +374,7 @@ function render() {
     checkSphereCollision();
     updateSunPosition();
     updateStars();
-    //if (frame % 32 === 0) setTimeout(addSphere, 0);
+    if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
 
 function animate() {
