@@ -33,6 +33,16 @@ body {
     text-decoration: none;
 }
 
+#pause {
+    padding-top: 20%;
+    color: white;
+    background: #526F35;
+    font-weight: bold;
+    font-size: 30px;
+    opacity: 0.6;
+    display: none;
+}
+
 #dead {
     padding-top: 20%;
     color: white;

@@ -51,6 +51,7 @@ var uniforms;
 var day = true;
 var mountainUniforms;
 var mountainMaterial;
+var isPaused = false;
 init();
 animate();
 
@@ -157,6 +158,12 @@ function init() {
     scene.add(starScene);
 
     backgroundMusic = Sound.play("./sounds/music.mp3");
+
+    window.addEventListener('keypress', function(evt) {
+        if (evt.keyCode == 112) { // P
+            pause();
+        }
+    });
 
     // TODO remove once the menu is enabled
     controls.movementEnabled = true;
@@ -382,8 +389,23 @@ function render() {
     if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
 
+function pause() {
+    if (isPaused) {
+        isPaused = false;
+        $("#pause").hide();
+        clock.start();
+        dayclock.start();
+        animate();
+    } else {
+        isPaused = true;
+        clock.stop();
+        dayclock.stop();
+        $("#pause").show();
+    }
+}
+
 function animate() {
-    if (dead) return;
+    if (dead || isPaused) return;
     requestAnimationFrame(animate);
 
     frame++;
