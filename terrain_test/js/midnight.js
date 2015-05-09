@@ -33,6 +33,7 @@ var frame = 0;
 var terrainScene;
 var sphereScene;
 var sphereOctree;
+var glowballScene;
 var starScene;
 var starMaterial;
 var score = 0;
@@ -140,6 +141,9 @@ function init() {
         objectsThreshold: 8,
         overlapPct: 0.15
     });
+
+    glowballScene = new THREE.Object3D();
+    scene.add(glowballScene);
     
     starScene = new THREE.Object3D();
     starMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
@@ -174,7 +178,7 @@ function findGround(pos) {
 }
 
 function addCell(iOff, jOff) {
-    data = generateHeight(Options.worldWidth, Options.worldDepth, iOff, jOff);
+    var data = generateHeight(Options.worldWidth, Options.worldDepth, iOff, jOff);
     var geometry = new THREE.PlaneBufferGeometry(Options.cellSize, Options.cellSize, Options.worldWidth - 1, Options.worldDepth - 1);
     geometry.applyMatrix(new THREE.Matrix4().makeRotationX(- Math.PI / 2));
 
@@ -196,7 +200,7 @@ function addCell(iOff, jOff) {
 
     var cell = new THREE.Object3D();
     cell.add(mesh);
-    //cell.add(meshShadow);
+    cell.add(meshShadow);
     terrainScene.add(cell);
 
     cell.translateX(iOff * Options.cellSize);
@@ -217,7 +221,7 @@ function removeCell(i, j) {
 function addSphere() {
     var sphere = new THREE.Object3D();
 
-    var geometry = new THREE.SphereGeometry(20, 32, 32);
+    var geometry = new THREE.SphereGeometry(40, 32, 32);
     var material = new THREE.MeshPhongMaterial({color: 0xffff00});
     var materialOutline = new THREE.MeshBasicMaterial({color: 0x0, side: THREE.BackSide });
     var sphereBody = new THREE.Mesh(geometry, material);
@@ -237,10 +241,26 @@ function addSphere() {
     sphere.position.z = camera.position.z + dir.y * offset + disk.y;
     findGround(sphere.position);
     sphere.position.y += 500;
+    
+    var glowball = new THREE.PointLight( 0xff0040, 100, 10000 );
+    glowball.position.set(sphere.position.x, sphere.position.y, sphere.position.z);
+    glowball.intensity = 1;
+
+    /*var program = function ( context ) {
+                    context.beginPath();
+                    context.arc( 0, 0, 0.5, 0, Math.PI * 2, true );
+                    context.fill();
+                }
+                var sprite = new THREE.Sprite( new THREE.SpriteCanvasMaterial( { color: 0xff0040, program: program } ) );
+                glowball.add( sprite );*/
+
+    glowballScene.add(glowball);
+    
     sphereScene.add(sphere);
     sphereOctree.add(sphere);
+    
     return sphere;
-}
+}  
 
 function generateHeight(width, height, iOff, jOff) {
     var size = width * height, data = new Uint8Array(size),
@@ -322,6 +342,15 @@ function checkSphereCollision() {
     }
 }
 
+function updateSpheres() {
+    var time = clock.getElapsedTime();
+    for (var i = 0; i < glowballScene.children.length; i++) {
+        glowballScene.children[i].position.x = Math.sin( time * 0.7 ) * 30;
+        glowballScene.children[i].position.y = Math.cos( time * 0.5 ) * 40;
+        glowballScene.children[i].position.z = Math.cos( time * 0.3 ) * 30;
+    }
+}
+
 function updateStars() {
     var day = Options.dayLength;
     var time = (clock.getElapsedTime() / day / Math.PI) % 2
@@ -359,9 +388,10 @@ function render() {
     loadCells();
     checkCollision();
     checkSphereCollision();
+    //updateSpheres();
     updateSunPosition();
     updateStars();
-    //if (frame % 32 === 0) setTimeout(addSphere, 0);
+    if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
 
 function animate() {
