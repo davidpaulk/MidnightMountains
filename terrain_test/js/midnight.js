@@ -256,15 +256,6 @@ function addSphere() {
     var glowball = new THREE.PointLight( 0xff0040, 100, 10000 );
     glowball.position.set(sphere.position.x, sphere.position.y, sphere.position.z);
     glowball.intensity = 1;
-
-    /*var program = function ( context ) {
-                    context.beginPath();
-                    context.arc( 0, 0, 0.5, 0, Math.PI * 2, true );
-                    context.fill();
-                }
-                var sprite = new THREE.Sprite( new THREE.SpriteCanvasMaterial( { color: 0xff0040, program: program } ) );
-                glowball.add( sprite );*/
-
     glowballScene.add(glowball);
     
     sphereScene.add(sphere);
@@ -370,9 +361,14 @@ function checkSphereCollision() {
 function updateSpheres() {
     var time = clock.getElapsedTime();
     for (var i = 0; i < glowballScene.children.length; i++) {
-        glowballScene.children[i].position.x = Math.sin( time * 0.7 ) * 30;
-        glowballScene.children[i].position.y = Math.cos( time * 0.5 ) * 40;
-        glowballScene.children[i].position.z = Math.cos( time * 0.3 ) * 30;
+        glowballScene.children[i].position.x += Math.sin( time * 7 ) * 3;
+        glowballScene.children[i].position.y += Math.cos( time * 5 ) * 4;
+        glowballScene.children[i].position.z += Math.cos( time * 3 ) * 3;
+    }
+    for (var i = 0; i < sphereScene.children.length; i++) {
+        sphereScene.children[i].position.x += Math.sin( time * 7 ) * 3;
+        sphereScene.children[i].position.y += Math.cos( time * 5 ) * 4;
+        sphereScene.children[i].position.z += Math.cos( time * 3 ) * 3;
     }
 }
 
@@ -413,7 +409,7 @@ function render() {
     loadCells();
     checkCollision();
     checkSphereCollision();
-    //updateSpheres();
+    updateSpheres();
     updateSunPosition();
     updateStars();
     if (frame % 32 === 0) setTimeout(addSphere, 0);
