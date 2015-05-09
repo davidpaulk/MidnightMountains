@@ -176,3 +176,52 @@ THREE.ShaderLib['mountain'].uniforms.reileigh =    { type: "f", value:2 };
 THREE.ShaderLib['mountain'].uniforms.mieCoefficient =  { type: "f", value:0.005 };
 THREE.ShaderLib['mountain'].uniforms.mieDirectionalG = { type: "f", value:0.93 };
 THREE.ShaderLib['mountain'].uniforms.isDay = { type: "1i", value: 1 };
+
+THREE.ShaderLib['outline'] = {
+    uniforms: THREE.UniformsUtils.clone(THREE.ShaderLib['basic'].uniforms),
+    vertexShader: THREE.ShaderLib['basic'].vertexShader,
+    fragmentShader: [
+        "uniform vec3 diffuse;",
+        "uniform float opacity;",
+
+        THREE.ShaderChunk[ "common" ],
+        THREE.ShaderChunk[ "color_pars_fragment" ],
+        THREE.ShaderChunk[ "map_pars_fragment" ],
+        THREE.ShaderChunk[ "alphamap_pars_fragment" ],
+        THREE.ShaderChunk[ "lightmap_pars_fragment" ],
+        THREE.ShaderChunk[ "envmap_pars_fragment" ],
+        THREE.ShaderChunk[ "fog_pars_fragment" ],
+        THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
+        THREE.ShaderChunk[ "specularmap_pars_fragment" ],
+        THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
+
+        "void main() {",
+
+        "   vec3 outgoingLight = vec3( 0.0 );", // outgoing light does not have an alpha, the surface does
+        "   vec4 diffuseColor = vec4( diffuse, opacity );",
+
+        THREE.ShaderChunk[ "logdepthbuf_fragment" ],
+        THREE.ShaderChunk[ "map_fragment" ],
+        THREE.ShaderChunk[ "color_fragment" ],
+        THREE.ShaderChunk[ "alphamap_fragment" ],
+        THREE.ShaderChunk[ "alphatest_fragment" ],
+        THREE.ShaderChunk[ "specularmap_fragment" ],
+
+        "   outgoingLight = diffuseColor.rgb;", // simple shader
+
+        THREE.ShaderChunk[ "lightmap_fragment" ],       // TODO: Light map on an otherwise unlit surface doesn't make sense.
+        THREE.ShaderChunk[ "envmap_fragment" ],
+        THREE.ShaderChunk[ "shadowmap_fragment" ],      // TODO: Shadows on an otherwise unlit surface doesn't make sense.
+
+        THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
+
+        THREE.ShaderChunk[ "fog_fragment" ],
+
+        "   outgoingLight = vec3( 0.0 );",
+        "   gl_FragColor = vec4( outgoingLight, diffuseColor.a );", // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
+
+        "}"
+
+    ].join("\n")
+};
+

@@ -52,6 +52,8 @@ var uniforms;
 var day = true;
 var mountainUniforms;
 var mountainMaterial;
+var outlineUniforms;
+var outlineMaterial;
 var isPaused = false;
 init();
 animate();
@@ -103,6 +105,17 @@ function init() {
         fragmentShader: shader.fragmentShader,
         lights:true,
         fog: true
+    });
+
+    var shader = THREE.ShaderLib['outline'];
+    outlineUniforms = THREE.UniformsUtils.clone(shader.uniforms);
+    //outlineUniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
+    //outlineUniforms.isDay = { type: "1i", value: day ? 1 : 0 };
+    outlineMaterial = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        uniforms: outlineUniforms,
+        vertexShader: shader.vertexShader,
+        fragmentShader: shader.fragmentShader
     });
     addCell(0, 0);
 
@@ -203,8 +216,10 @@ function addCell(iOff, jOff) {
     var mesh = new THREE.Mesh(geometry, mountainMaterial);
     //var mesh = new THREE.Mesh(geometry, material);
 
-    var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
-    meshShadow.visible = false;
+    //var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
+    var meshShadow = new THREE.Mesh(geometry, outlineMaterial);
+
+    //meshShadow.visible = false;
     meshShadow.scale.multiplyScalar(1.01);
 
     var cell = new THREE.Object3D();
@@ -252,24 +267,24 @@ function addSphere() {
     sphere.position.z = camera.position.z + dir.y * offset + disk.y;
     findGround(sphere.position);
     sphere.position.y += 500;
-    
+
     var glowball = new THREE.PointLight( 0xff0040, 100, 10000 );
     glowball.position.set(sphere.position.x, sphere.position.y, sphere.position.z);
     glowball.intensity = 1;
 
     /*var program = function ( context ) {
-                    context.beginPath();
-                    context.arc( 0, 0, 0.5, 0, Math.PI * 2, true );
-                    context.fill();
-                }
-                var sprite = new THREE.Sprite( new THREE.SpriteCanvasMaterial( { color: 0xff0040, program: program } ) );
-                glowball.add( sprite );*/
+      context.beginPath();
+      context.arc( 0, 0, 0.5, 0, Math.PI * 2, true );
+      context.fill();
+      }
+      var sprite = new THREE.Sprite( new THREE.SpriteCanvasMaterial( { color: 0xff0040, program: program } ) );
+      glowball.add( sprite );*/
 
     glowballScene.add(glowball);
-    
+
     sphereScene.add(sphere);
     sphereOctree.add(sphere);
-    
+
     return sphere;
 }  
 
@@ -312,11 +327,11 @@ function loadCells() {
     var zMin = currZ - off;
     var zMax = currZ + off;
     cells.each(function(x, z) {
-        if (x < xMin || x > xMax ||
-            z < zMin || z > zMax) {
+            if (x < xMin || x > xMax ||
+                z < zMin || z > zMax) {
             removeCell(x, z);
-        }
-    });
+            }
+            });
     for (var i = xMin; i <= xMax; i++) {
         for (var j = zMin; j <= zMax; j++) {
             if (!cells.get(i, j)) {
@@ -331,11 +346,11 @@ function loadCells() {
     }
     var shadowRange = Math.floor(off / 2);
     shadows.each(function(x, z, shadow) {
-        if (x >= currX - shadowRange && x <= currX + shadowRange &&
-            z >= currZ - shadowRange && z <= currZ + shadowRange) {
+            if (x >= currX - shadowRange && x <= currX + shadowRange &&
+                z >= currZ - shadowRange && z <= currZ + shadowRange) {
             shadow.visible = true;
         } else {
-            shadow.visible = false;
+            //shadow.visible = false;
         }
     });
     cellX = currX;
