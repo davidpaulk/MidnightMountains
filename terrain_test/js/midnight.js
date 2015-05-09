@@ -67,11 +67,47 @@ var effectController  = {
 init();
 animate();
 
+function setParams() {
+    var clock = new THREE.Clock();
+    var dayclock = new THREE.Clock();
+    var cells = new Utils.PairMap();
+    var shadows = new Utils.PairMap();
+    var cellX = null;
+    var cellZ = null;
+    var spheres = [];
+    var maxDist = Options.cellSize * Options.cellRange;
+    var frame = 0;
+    var score = 0;
+    var backgroundMusic = null;
+    var dead = false;
+    var startTime = null;
+    var sunlight = new THREE.DirectionalLight( 0xffffff, 1.5 );
+    var originalpos = new THREE.Vector3(0, 0, 0);
+    var day = true;
+    var isPaused = false;
+    var effectController  = {
+            turbidity: 4,
+            reileigh: 2,
+            mieCoefficient: 0.005,
+            mieDirectionalG: 0.93,
+            luminance: 1.13,
+            inclination: 0.49, // elevation / inclination
+            azimuth: 0.25, // Facing front,
+    }
+}
+
 function start() {
     $("#menu").fadeOut(500, function() {
         controls.movementEnabled = true;
         controls.lookSpeed = Options.lookSpeed;
     });
+}
+
+function reset() {
+    dead = false;
+    setParams();
+    init();
+    animate();
 }
 
 function init() {
@@ -123,8 +159,8 @@ function init() {
     findGround(camera.position);
     camera.position.y = 4000;
 
-    var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
-    directionalLight.position.set( 1, 1, 1 );
+    // var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
+    // directionalLight.position.set( 1, 1, 1 );
     //scene.add( directionalLight );
 
     light = new THREE.PointLight( 0xffffff, 2, 6000 );
@@ -352,6 +388,10 @@ function checkCollision() {
         if (backgroundMusic) Sound.stop(backgroundMusic);
         Sound.play("./sounds/dead.wav");
         $("#dead").fadeIn(100, 'linear'); dead = true;
+        $("#redo").click(function() {
+            $("#dead").fadeOut(100, 'linear');
+            reset();
+        });
     }
 }
 
