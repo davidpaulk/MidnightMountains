@@ -84,7 +84,7 @@ function init() {
     //scene.fog = new THREE.FogExp2(Options.bgColor, 0.0004);
     scene.fog = new THREE.Fog(Options.bgColor, maxDist * 3 / 4, maxDist);
 
-    controls = new THREE.FirstPersonControls(camera);
+    controls = new THREE.FirstPersonControls(camera, document, score);
     controls.fastSpeed = Options.fastSpeed;
     controls.slowSpeed = Options.slowSpeed;
     controls.lookSpeed = 0;
@@ -421,7 +421,7 @@ function render() {
     checkCollision();
     checkSphereCollision();
     updateSpheres();
-    updateSunPosition();
+    updateSun();
     updateStars();
     if (frame % 32 === 0) setTimeout(addSphere, 0);
 }
@@ -467,19 +467,15 @@ function initSky(){
     // Add Sun Helper
     sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
         new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-    /// GUI
 
     var distance = 400000;
 
     uniforms = sky.uniforms;
     updateUniforms();
 
-    var theta = Math.PI * (effectController.inclination - 0.5);
-    var phi = 2 * Math.PI * (effectController.azimuth - 0.5);
-
-    sunSphere.position.x = distance * Math.cos(phi);
-    sunSphere.position.y = distance * Math.sin(phi) * Math.sin(theta);
-    sunSphere.position.z = distance * Math.sin(phi) * Math.cos(theta);
+    sunSphere.position.x = 0.0;
+    sunSphere.position.y = 0.0;
+    sunSphere.position.z = 1.0;
     sunlight.position.copy(sunSphere.position);
     originalpos.copy(sunSphere.position);
     scene.add(sunlight);
@@ -489,7 +485,7 @@ function initSky(){
     sky.uniforms.sunPosition.value.copy(sunSphere.position);
 }
 
-function updateSunPosition() {
+function updateSun() {
     var time = dayclock.getElapsedTime();
     var a = Options.dayLength;
     if (day) {
@@ -502,8 +498,8 @@ function updateSunPosition() {
                 mieCoefficient: 0.0001,
                 mieDirectionalG: 0.99,
                 luminance: 1.1,
-                inclination: 0.49, // elevation / inclination
-                azimuth: 0.25, // Facing front,
+                inclination: 0.49,
+                azimuth: 0.25,
             }
             updateUniforms();
             sunlight.position.copy(originalpos);
@@ -513,11 +509,8 @@ function updateSunPosition() {
             return;
         }
         sunlight.intensity = 1.6 * Math.sin(time/a);
-        sunSphere.position.x = 0;
-        sunSphere.position.y = Math.sin(time/a);
-        sunSphere.position.z = Math.cos(time/a);
-        sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
-        sky.uniforms.sunPosition.value.copy(sunSphere.position);
+        updateSunPosition(time, a);
+
     }
     else {
         if (Math.sin(time/a) < 0.0) {
@@ -529,8 +522,8 @@ function updateSunPosition() {
                 mieCoefficient: 0.005,
                 mieDirectionalG: 0.93,
                 luminance: 1.13,
-                inclination: 0.49, // elevation / inclination
-                azimuth: 0.25, // Facing front,
+                inclination: 0.49,
+                azimuth: 0.25,
             }
             updateUniforms();
             sunlight.position.copy(originalpos);
@@ -540,14 +533,18 @@ function updateSunPosition() {
             return;
         }
         sunlight.intensity = .5 * Math.sin(time/a)
-        sunSphere.position.x = 0;
-        sunSphere.position.y = Math.sin(time/a);
-        sunSphere.position.z = Math.cos(time/a);
-        sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
-        sky.uniforms.sunPosition.value.copy(sunSphere.position);
+        updateSunPosition(time, a);
     }
 
     mountainUniforms.sunPosition.value = sunSphere.position.clone();;
+}
+
+function updateSunPosition(time, a) {
+    sunSphere.position.x = 0;
+    sunSphere.position.y = Math.sin(time/a);
+    sunSphere.position.z = Math.cos(time/a);
+    sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
+    sky.uniforms.sunPosition.value.copy(sunSphere.position);
 }
 
 function updateUniforms() {
