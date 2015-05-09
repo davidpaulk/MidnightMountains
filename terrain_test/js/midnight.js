@@ -25,6 +25,7 @@ var camera, controls, scene, renderer;
 var clock = new THREE.Clock();
 var dayclock = new THREE.Clock();
 var cells = new Utils.PairMap();
+var sunPositionUniforms = new Utils.PairMap();
 var cellX;
 var cellZ;
 var spheres = [];
@@ -179,6 +180,8 @@ function addCell(iOff, jOff) {
         lights:true,
         fog: true
     });
+
+    sunPositionUniforms.set(iOff, jOff, uniforms.sunPosition);
     //var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
     //var mesh = new THREE.Mesh(geometry, mountainMaterial);
     var mesh = new THREE.Mesh(geometry, material);
@@ -201,6 +204,7 @@ function addCell(iOff, jOff) {
 
 function removeCell(i, j) {
     var cell = cells.remove(i, j);
+    sunPositionUniforms.remove(i, j);
     if (cell) {
         terrainScene.remove(cell);
     }
@@ -489,4 +493,8 @@ function updateSunPosition() {
         sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
         sky.uniforms.sunPosition.value.copy(sunSphere.position);
     }
+
+    sunPositionUniforms.each(function(i, j, pos) {
+        pos.value = sunSphere.position.clone();
+    });
 }
