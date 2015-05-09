@@ -26,8 +26,8 @@ var clock = new THREE.Clock();
 var dayclock = new THREE.Clock();
 var cells = new Utils.PairMap();
 var shadows = new Utils.PairMap();
-var cellX;
-var cellZ;
+var cellX = null;
+var cellZ = null;
 var spheres = [];
 var maxDist = Options.cellSize * Options.cellRange;
 var frame = 0;
@@ -290,6 +290,18 @@ function loadCells() {
             removeCell(x, z);
         }
     });
+    for (var i = xMin; i <= xMax; i++) {
+        for (var j = zMin; j <= zMax; j++) {
+            if (!cells.get(i, j)) {
+                // Delay adding if not the first load
+                if (cellX === null) {
+                    addCell(i, j);
+                } else {
+                    setTimeout(addCell, 0, i, j);
+                }
+            }
+        }
+    }
     var shadowRange = Math.floor(off / 2);
     shadows.each(function(x, z, shadow) {
         if (x >= currX - shadowRange && x <= currX + shadowRange &&
@@ -299,13 +311,6 @@ function loadCells() {
             shadow.visible = false;
         }
     });
-    for (var i = xMin; i <= xMax; i++) {
-        for (var j = zMin; j <= zMax; j++) {
-            if (!cells.get(i, j)) {
-                setTimeout(addCell, 0, i, j);
-            }
-        }
-    }
     cellX = currX;
     cellZ = currZ;
 }
