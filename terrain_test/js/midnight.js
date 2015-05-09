@@ -5,11 +5,11 @@ var Options = {
     worldWidth: 32,
     worldDepth: 32,
     cellSize: 1500,
-    cellRange: 8,
+    cellRange: 4,
     //bgColor: 0xbfd1e5,
     bgColor: 0x111111,
     fastSpeed: 2000,
-    slowSpeed: 0,
+    slowSpeed: 1000,
     dayLength: 2.,
     lookSpeed: 0.2
 };

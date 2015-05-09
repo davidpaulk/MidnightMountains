@@ -55,9 +55,6 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.viewHalfX = 0;
 	this.viewHalfY = 0;
 
-	this.randTimer = 0;
-	this.randPerturb = new THREE.Vector2(1.0, 1.0, 1.0);
-
 	if ( this.domElement !== document ) {
 
 		this.domElement.setAttribute( 'tabindex', -1 );
@@ -95,8 +92,10 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		if ( this.activeLook ) {
 			switch ( event.button ) {
-				case 0: this.moving = true; this.movementSpeed = this.fastSpeed; this.moveForward = true; break;
-				//case 2: this.moveBackward = true; break;
+				case 0: 
+					this.moving = true; 
+					this.movementSpeed = this.fastSpeed; 
+					this.moveForward = true; break;
 			}
 
 		}
@@ -113,11 +112,10 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		if ( this.activeLook ) {
 
 			switch ( event.button ) {
-				case 0: this.movementSpeed = this.slowSpeed; break;
-                /*
-				case 0: this.moveForward = false; break;
-				case 2: this.moveBackward = false; break;
-                */
+				case 0:
+					this.moving = true;
+					this.movementSpeed = this.slowSpeed; 
+					break;
 			}
 
 		}
@@ -149,19 +147,44 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		switch ( event.keyCode ) {
 
 			case 38: /*up*/
-			case 87: /*W*/ this.moveForward = true; break;
+			case 87: /*W*/ 
+				this.moving = true; 
+				this.movementSpeed = this.fastSpeed; 
+				this.moveForward = true; 
+				break;
 
 			case 37: /*left*/
-			case 65: /*A*/ this.moveLeft = true; break;
+			case 65: /*A*/ 
+				this.moving = true; 
+				this.movementSpeed = this.fastSpeed; 
+				this.moveLeft = true; 
+				break;
 
 			case 40: /*down*/
-			case 83: /*S*/ this.moveBackward = true; break;
+			case 83: /*S*/ 
+			this.moving = true; 
+			this.movementSpeed = this.fastSpeed; 
+			this.moveBackward = true;
+			break;
 
 			case 39: /*right*/
-			case 68: /*D*/ this.moveRight = true; break;
+			case 68: /*D*/ 
+			this.moving = true; 
+			this.movementSpeed = this.fastSpeed; 
+			this.moveRight = true;
+			break;
 
-			case 82: /*R*/ this.moveUp = true; break;
-			case 70: /*F*/ this.moveDown = true; break;
+			case 82: /*R*/ 
+			this.moving = true; 
+			this.movementSpeed = this.fastSpeed; 
+			this.moveUp = true;
+			break;
+
+			case 70: /*F*/ 
+			this.moving = true; 
+			this.movementSpeed = this.fastSpeed; 
+			this.moveDown = true
+			break;
 
 		}
 
@@ -210,28 +233,14 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		var actualMoveSpeed = delta * this.movementSpeed;
         if (!this.movementEnabled) actualMoveSpeed = 0;
 
-		// noise for "flutter effect" in flying (more-so random accelerations as of now)
-		// random perturbations vary speed by anywhere from -2 times to 4 times the original speed
-		if (this.randTimer == 50) {
-			var diskOffset = new THREE.Vector2(1.0, 1.0);
-			this.randPerturb = Random.disk(3.0, diskOffset);
-			this.randTimer = 0;
-		}
-		else {
-			this.randTimer += 1;
-		}
-
-		/* with random perturbations in the x and y directions (this method for 
-			perturbations applied in the z direction make the player's perspective 
-			seem very "glitchy"                                                    */
 		if ( this.moveForward || ( this.autoForward && !this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
 		if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
 
-		if ( this.moveLeft ) this.object.translateX( - randPerturb.x * actualMoveSpeed );
-		if ( this.moveRight ) this.object.translateX( randPerturb.x * actualMoveSpeed );
+		if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
+		if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
 
-		if ( this.moveUp ) this.object.translateY( randPerturb.y * actualMoveSpeed );
-		if ( this.moveDown ) this.object.translateY( - randPerturb.y * actualMoveSpeed );
+		if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
+		if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
 
 		var actualLookSpeed = delta * this.lookSpeed;
 
