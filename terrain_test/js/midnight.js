@@ -25,7 +25,6 @@ var camera, controls, scene, renderer;
 var clock = new THREE.Clock();
 var dayclock = new THREE.Clock();
 var cells = new Utils.PairMap();
-var cellUniforms = new Utils.PairMap();
 var cellX;
 var cellZ;
 var spheres = [];
@@ -49,6 +48,7 @@ var sunSphere;
 var originalpos = new THREE.Vector3(0, 0, 0);
 var uniforms;
 var day = true;
+var mountainUniforms;
 var mountainMaterial;
 init();
 animate();
@@ -78,11 +78,29 @@ function init() {
 
     /* David's texture code */
     var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
-    mountainMaterial = new THREE.MeshLambertMaterial({ map: mountainTexture });
-    mountainMaterial.normalMap = THREE.ImageUtils.loadTexture( "js/textures/mountain_2_normal.jpg" ).rgb;
+    //mountainMaterial = new THREE.MeshLambertMaterial({ map: mountainTexture });
+    //mountainMaterial.normalMap = THREE.ImageUtils.loadTexture( "js/textures/mountain_2_normal.jpg" ).rgb;
 
     terrainScene = new THREE.Object3D();
     scene.add(terrainScene);
+
+    var shader = THREE.ShaderLib['mountain'];
+    mountainUniforms = THREE.UniformsUtils.clone(shader.uniforms);
+    mountainUniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
+    mountainUniforms.myColor = { type: "c", value: new THREE.Color(0x774400) };
+    mountainUniforms.isDay.value = day ? 1 : 0;
+    mountainMaterial = new THREE.ShaderMaterial({
+        defines: {
+            //USE_MAP: true
+        },
+        //map: mountainTexture,
+        uniforms: mountainUniforms,
+        vertexColors: THREE.VertexColors,
+        vertexShader: shader.vertexShader,
+        fragmentShader: shader.fragmentShader,
+        lights:true,
+        fog: true
+    });
     addCell(0, 0);
 
     // Set starting position
@@ -168,24 +186,10 @@ function addCell(iOff, jOff) {
 
     geometry.computeVertexNormals();
 
-    var shader = THREE.ShaderLib['mountain'];
-    var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
-    uniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
-    uniforms.myColor = { type: "c", value: new THREE.Color(0x774400) };
-    uniforms.isDay.value = day ? 1 : 0;
-    var material = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexColors: THREE.VertexColors,
-        vertexShader: shader.vertexShader,
-        fragmentShader: shader.fragmentShader,
-        lights:true,
-        fog: true
-    });
 
-    cellUniforms.set(iOff, jOff, uniforms);
     //var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
-    //var mesh = new THREE.Mesh(geometry, mountainMaterial);
-    var mesh = new THREE.Mesh(geometry, material);
+    var mesh = new THREE.Mesh(geometry, mountainMaterial);
+    //var mesh = new THREE.Mesh(geometry, material);
 
     var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
     meshShadow.scale.multiplyScalar(1.003);
@@ -205,7 +209,6 @@ function addCell(iOff, jOff) {
 
 function removeCell(i, j) {
     var cell = cells.remove(i, j);
-    cellUniforms.remove(i, j);
     if (cell) {
         terrainScene.remove(cell);
     }
@@ -451,9 +454,7 @@ function updateSunPosition() {
             sunlight.position.copy(originalpos);
             sunlight.intensity = .5 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
-            cellUniforms.each(function(i, j, uniforms) {
-                uniforms.isDay.value = 0;
-            });
+            mountainUniforms.isDay.value = 0;
             return;
         }
         sunlight.intensity = 1.6 * Math.sin(time/a);
@@ -487,9 +488,7 @@ function updateSunPosition() {
             sunlight.position.copy(originalpos);
             sunlight.intensity = 1.6 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
-            cellUniforms.each(function(i, j, uniforms) {
-                uniforms.isDay.value = 1;
-            });
+            mountainUniforms.isDay.value = 1;
             return;
         }
         sunlight.intensity = .5 * Math.sin(time/a)
@@ -500,7 +499,5 @@ function updateSunPosition() {
         sky.uniforms.sunPosition.value.copy(sunSphere.position);
     }
 
-    cellUniforms.each(function(i, j, uniforms) {
-        uniforms.sunPosition.value = sunSphere.position.clone();
-    });
+    mountainUniforms.sunPosition.value = sunSphere.position.clone();;
 }
