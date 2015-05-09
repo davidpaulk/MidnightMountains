@@ -23,8 +23,9 @@
 	#endif
 	
 	//outgoingLight = mix( outgoingLight, fogColor, fogFactor );
-        vec3 newColor = calcColor(diff);
-	//outgoingLight = mix( outgoingLight, abs(diff), fogFactor );
-	outgoingLight = mix( outgoingLight, newColor, fogFactor );
-
+    vec3 newColor = vec3(0., 0., 0.);
+    if (isDay == 1) {
+        newColor = calcColor(diff);
+    }
+    outgoingLight = mix( outgoingLight, newColor, fogFactor );
 #endif

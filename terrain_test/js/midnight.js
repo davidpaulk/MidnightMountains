@@ -10,7 +10,7 @@ var Options = {
     bgColor: 0x111111,
     fastSpeed: 2000,
     slowSpeed: 0,
-    dayLength: 4.,
+    dayLength: 2.,
     lookSpeed: 0.2
 };
 // End parameters
@@ -25,7 +25,7 @@ var camera, controls, scene, renderer;
 var clock = new THREE.Clock();
 var dayclock = new THREE.Clock();
 var cells = new Utils.PairMap();
-var sunPositionUniforms = new Utils.PairMap();
+var cellUniforms = new Utils.PairMap();
 var cellX;
 var cellZ;
 var spheres = [];
@@ -172,6 +172,7 @@ function addCell(iOff, jOff) {
     var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
     uniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
     uniforms.myColor = { type: "c", value: new THREE.Color(0x774400) };
+    uniforms.isDay.value = day ? 1 : 0;
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexColors: THREE.VertexColors,
@@ -181,7 +182,7 @@ function addCell(iOff, jOff) {
         fog: true
     });
 
-    sunPositionUniforms.set(iOff, jOff, uniforms.sunPosition);
+    cellUniforms.set(iOff, jOff, uniforms);
     //var material = new THREE.MeshLambertMaterial({ color: 0x663300 });
     //var mesh = new THREE.Mesh(geometry, mountainMaterial);
     var mesh = new THREE.Mesh(geometry, material);
@@ -204,7 +205,7 @@ function addCell(iOff, jOff) {
 
 function removeCell(i, j) {
     var cell = cells.remove(i, j);
-    sunPositionUniforms.remove(i, j);
+    cellUniforms.remove(i, j);
     if (cell) {
         terrainScene.remove(cell);
     }
@@ -425,7 +426,7 @@ function initSky(){
 
 function updateSunPosition() {
     var time = dayclock.getElapsedTime();
-    var a = 10.0;
+    var a = Options.dayLength;
     if (day) {
         if (Math.sin(time/a) < 0.0) {
             day = false;
@@ -450,6 +451,9 @@ function updateSunPosition() {
             sunlight.position.copy(originalpos);
             sunlight.intensity = .5 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
+            cellUniforms.each(function(i, j, uniforms) {
+                uniforms.isDay.value = 0;
+            });
             return;
         }
         sunlight.intensity = 1.6 * Math.sin(time/a);
@@ -483,7 +487,9 @@ function updateSunPosition() {
             sunlight.position.copy(originalpos);
             sunlight.intensity = 1.6 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
-            return;
+            cellUniforms.each(function(i, j, uniforms) {
+                uniforms.isDay.value = 1;
+            });
             return;
         }
         sunlight.intensity = .5 * Math.sin(time/a)
@@ -494,7 +500,7 @@ function updateSunPosition() {
         sky.uniforms.sunPosition.value.copy(sunSphere.position);
     }
 
-    sunPositionUniforms.each(function(i, j, pos) {
-        pos.value = sunSphere.position.clone();
+    cellUniforms.each(function(i, j, uniforms) {
+        uniforms.sunPosition.value = sunSphere.position.clone();
     });
 }

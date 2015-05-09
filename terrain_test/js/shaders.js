@@ -111,7 +111,7 @@ THREE.ShaderLib['mountain'] = {
     ].join("\n"),
     fragmentShader: [
         Shaders.shader('sky.frag'),
-
+        "uniform int isDay;",
         "uniform vec3 diffuse;",
         "uniform vec3 emissive;",
         "uniform float opacity;",
@@ -175,3 +175,4 @@ THREE.ShaderLib['mountain'].uniforms.turbidity =   { type: "f", value:4 };
 THREE.ShaderLib['mountain'].uniforms.reileigh =    { type: "f", value:2 };
 THREE.ShaderLib['mountain'].uniforms.mieCoefficient =  { type: "f", value:0.005 };
 THREE.ShaderLib['mountain'].uniforms.mieDirectionalG = { type: "f", value:0.93 };
+THREE.ShaderLib['mountain'].uniforms.isDay = { type: "1i", value: 1 };
