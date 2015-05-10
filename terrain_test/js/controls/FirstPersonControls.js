@@ -10,6 +10,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.object = object;
 	this.target = new THREE.Vector3( 0, 0, 0 );
 
+	this.velocity = new THREE.Vector3( 0, 0, 0 );
+
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	this.enabled = true;
@@ -45,6 +47,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.phi = 0;
 	this.theta = 0;
 
+    this.score = 0;
+
 	this.moveForward = false;
 	this.moveBackward = false;
 	this.moveLeft = false;
@@ -55,54 +59,35 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.viewHalfX = 0;
 	this.viewHalfY = 0;
 
-	this.randTimer = 0;
-	this.randPerturb = new THREE.Vector2(1.0, 1.0, 1.0);
-
 	if ( this.domElement !== document ) {
-
 		this.domElement.setAttribute( 'tabindex', -1 );
-
 	}
 
-	//
-
 	this.handleResize = function () {
-
 		if ( this.domElement === document ) {
-
 			this.viewHalfX = window.innerWidth / 2;
 			this.viewHalfY = window.innerHeight / 2;
-
 		} else {
-
 			this.viewHalfX = this.domElement.offsetWidth / 2;
 			this.viewHalfY = this.domElement.offsetHeight / 2;
-
 		}
-
 	};
 
 	this.onMouseDown = function ( event ) {
-
 		if ( this.domElement !== document ) {
-
 			this.domElement.focus();
-
 		}
-
 		event.preventDefault();
 		event.stopPropagation();
-
 		if ( this.activeLook ) {
 			switch ( event.button ) {
-				case 0: this.moving = true; this.movementSpeed = this.fastSpeed; this.moveForward = true; break;
-				//case 2: this.moveBackward = true; break;
+				case 0: 
+					this.moving = true; 
+					//this.movementSpeed = this.fastSpeed; 
+					this.moveForward = true; break;
 			}
-
 		}
-
 		this.mouseDragOn = true;
-
 	};
 
 	this.onMouseUp = function ( event ) {
@@ -113,11 +98,10 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		if ( this.activeLook ) {
 
 			switch ( event.button ) {
-				case 0: this.movementSpeed = this.slowSpeed; break;
-                /*
-				case 0: this.moveForward = false; break;
-				case 2: this.moveBackward = false; break;
-                */
+				case 0:
+					this.moveForward = false;
+					//this.movementSpeed = this.slowSpeed; 
+					break;
 			}
 
 		}
@@ -127,19 +111,13 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.onMouseMove = function ( event ) {
-
 		if ( this.domElement === document ) {
-
 			this.mouseX = event.pageX - this.viewHalfX;
 			this.mouseY = event.pageY - this.viewHalfY;
-
 		} else {
-
 			this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
 			this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
-
 		}
-
 	};
 
 	this.onKeyDown = function ( event ) {
@@ -149,19 +127,38 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		switch ( event.keyCode ) {
 
 			case 38: /*up*/
-			case 87: /*W*/ this.moveForward = true; break;
+			case 87: /*W*/ 
+				this.moving = true; 
+				this.moveForward = true; 
+				break;
 
 			case 37: /*left*/
-			case 65: /*A*/ this.moveLeft = true; break;
+			case 65: /*A*/ 
+				this.moving = true; 
+				this.moveLeft = true; 
+				break;
 
 			case 40: /*down*/
-			case 83: /*S*/ this.moveBackward = true; break;
+			case 83: /*S*/ 
+			this.moving = true; 
+			this.moveBackward = true;
+			break;
 
 			case 39: /*right*/
-			case 68: /*D*/ this.moveRight = true; break;
+			case 68: /*D*/ 
+			this.moving = true; 
+			this.moveRight = true;
+			break;
 
-			case 82: /*R*/ this.moveUp = true; break;
-			case 70: /*F*/ this.moveDown = true; break;
+			case 82: /*R*/ 
+			this.moving = true; 
+			this.moveUp = true;
+			break;
+
+			case 70: /*F*/ 
+			this.moving = true; 
+			this.moveDown = true
+			break;
 
 		}
 
@@ -191,54 +188,38 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.update = function( delta ) {
-
 		if ( this.enabled === false ) return;
 
-		if ( this.heightSpeed ) {
-
-			var y = THREE.Math.clamp( this.object.position.y, this.heightMin, this.heightMax );
-			var heightDelta = y - this.heightMin;
-
-			this.autoSpeedFactor = delta * ( heightDelta * this.heightCoef );
-
-		} else {
-
-			this.autoSpeedFactor = 0.0;
-
-		}
-
-		var actualMoveSpeed = delta * this.movementSpeed;
+		//var actualMoveSpeed = delta * this.movementSpeed;
+        var cap = 75 + this.score;
+		var actualMoveSpeed = delta * 100;
         if (!this.movementEnabled) actualMoveSpeed = 0;
 
-		// noise for "flutter effect" in flying (more-so random accelerations as of now)
-		// random perturbations vary speed by anywhere from -2 times to 4 times the original speed
-		if (this.randTimer == 50) {
-			var diskOffset = new THREE.Vector2(1.0, 1.0);
-			this.randPerturb = Random.disk(3.0, diskOffset);
-			this.randTimer = 0;
-		}
-		else {
-			this.randTimer += 1;
-		}
+        var v = this.velocity;
+        var slowFactor = 0.99;
 
-		/* with random perturbations in the x and y directions (this method for 
-			perturbations applied in the z direction make the player's perspective 
-			seem very "glitchy"                                                    */
-		if ( this.moveForward || ( this.autoForward && !this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
-		if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
+		if ( this.moveForward && v.z > -cap) v.z -= actualMoveSpeed;
+        else if ( this.moveBackward && v.z < cap) v.z += actualMoveSpeed;
+        else v.z *= slowFactor;
 
-		if ( this.moveLeft ) this.object.translateX( - randPerturb.x * actualMoveSpeed );
-		if ( this.moveRight ) this.object.translateX( randPerturb.x * actualMoveSpeed );
+		if ( this.moveLeft && v.x > -cap) v.x -= actualMoveSpeed;
+        else if ( this.moveRight && v.x < cap) v.x += actualMoveSpeed;
+        else v.x *= slowFactor;
 
-		if ( this.moveUp ) this.object.translateY( randPerturb.y * actualMoveSpeed );
-		if ( this.moveDown ) this.object.translateY( - randPerturb.y * actualMoveSpeed );
+		if ( this.moveUp && v.y < cap) v.y += actualMoveSpeed;
+        else if ( this.moveDown && v.y > -cap) v.y -= actualMoveSpeed;
+        else v.y *= slowFactor;
+
+        if (v.lengthSq() > cap * cap) v.setLength(cap);
+
+        this.object.translateX(v.x);
+        this.object.translateY(v.y);
+        this.object.translateZ(v.z);
 
 		var actualLookSpeed = delta * this.lookSpeed;
 
 		if ( !this.activeLook ) {
-
 			actualLookSpeed = 0;
-
 		}
 
 		var verticalLookRatio = 1;
