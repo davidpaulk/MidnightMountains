@@ -143,7 +143,7 @@ function init() {
     var shader = THREE.ShaderLib['mountain'];
     mountainUniforms = THREE.UniformsUtils.clone(shader.uniforms);
     mountainUniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
-    mountainUniforms.myColor = { type: "c", value: new THREE.Color(0x774400) };
+    mountainUniforms.myColor = { type: "c", value: new THREE.Color(0x7a5230) };
     mountainUniforms.isDay.value = day ? 1 : 0;
     mountainMaterial = new THREE.ShaderMaterial({
         defines: {

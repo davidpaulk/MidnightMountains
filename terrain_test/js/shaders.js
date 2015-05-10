@@ -162,6 +162,8 @@ THREE.ShaderLib['mountain'] = {
 
         THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
+        "outgoingLight *= (0.5 + vWorldPosition.y * 0.0005);",
+
         Shaders.shader('fog.frag'),
         //THREE.ShaderChunk[ "fog_fragment" ],
 
