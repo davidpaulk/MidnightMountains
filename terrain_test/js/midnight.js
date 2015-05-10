@@ -34,7 +34,7 @@ var frame = 0;
 var terrainScene;
 var sphereScene;
 var sphereOctree;
-var glowballScene;
+var sphereCt = 0;
 var starScene;
 var starMaterial;
 var score = 0;
@@ -143,9 +143,6 @@ function init() {
         objectsThreshold: 8,
         overlapPct: 0.15
     });
-
-    glowballScene = new THREE.Object3D();
-    scene.add(glowballScene);
     
     starScene = new THREE.Object3D();
     starMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
@@ -254,12 +251,13 @@ function addSphere() {
     sphere.position.y += 500;
     
     var glowball = new THREE.PointLight( 0xff0040, 100, 10000 );
-    glowball.position.set(sphere.position.x, sphere.position.y, sphere.position.z);
     glowball.intensity = 1;
-    glowballScene.add(glowball);
+    sphere.add(glowball);
     
     sphereScene.add(sphere);
     sphereOctree.add(sphere);
+
+    sphereCt++;
     
     return sphere;
 }  
@@ -360,15 +358,16 @@ function checkSphereCollision() {
 
 function updateSpheres() {
     var time = clock.getElapsedTime();
-    for (var i = 0; i < glowballScene.children.length; i++) {
-        glowballScene.children[i].position.x += Math.sin( time * 7 ) * 3;
-        glowballScene.children[i].position.y += Math.cos( time * 5 ) * 4;
-        glowballScene.children[i].position.z += Math.cos( time * 3 ) * 3;
-    }
-    for (var i = 0; i < sphereScene.children.length; i++) {
-        sphereScene.children[i].position.x += Math.sin( time * 7 ) * 3;
-        sphereScene.children[i].position.y += Math.cos( time * 5 ) * 4;
-        sphereScene.children[i].position.z += Math.cos( time * 3 ) * 3;
+    var childrenCopy = sphereScene.children.slice(0);
+    for (var i = 0; i < childrenCopy.length; i++) {
+        if (childrenCopy[i].position.distanceTo(camera.position) >= 7000.0) {
+            sphereScene.remove(childrenCopy[i]);
+        }
+        else {
+            childrenCopy[i].position.x += Math.sin( time * 7 ) * 3;
+            childrenCopy[i].position.y += Math.cos( time * 5 ) * 4;
+            childrenCopy[i].position.z += Math.cos( time * 3 ) * 3;
+        }
     }
 }
 
@@ -412,7 +411,7 @@ function render() {
     updateSpheres();
     updateSunPosition();
     updateStars();
-    if (frame % 32 === 0) setTimeout(addSphere, 0);
+    if (sphereScene.children.length < 10) addSphere();
 }
 
 function pause() {
