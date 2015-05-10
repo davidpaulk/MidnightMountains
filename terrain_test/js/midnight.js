@@ -63,7 +63,7 @@ var effectController  = {
         inclination: 0.49, // elevation / inclination
         azimuth: 0.25, // Facing front,
 }
-
+var ptcld;
 var player;
 
 init();
@@ -127,9 +127,9 @@ function init() {
     controls.lookSpeed = 0;
     controls.movementEnabled = false;
 
-    var playerGeometry = new THREE.SphereGeometry(10, 8, 8);
-    var playerMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
-    player = new THREE.Mesh(playerGeometry, playerMaterial);
+    var playerGeometry = new THREE.RingGeometry( 95, 100, 32 );
+    var playerMaterial = new THREE.MeshPhongMaterial( { color: 0x7f3f77 } );
+    player = new THREE.Mesh( playerGeometry, playerMaterial );
     scene.add(player);
 
     /* David's texture code */
@@ -230,6 +230,22 @@ function init() {
             pause();
         }
     });
+
+    var playerPos = camera.position.clone();
+    var dir = camera.getWorldDirection();
+    dir.multiplyScalar(600);
+    playerPos.add(dir);
+    player.rotation.x = camera.rotation.x;
+    player.rotation.y = camera.rotation.y;
+    player.rotation.z = camera.rotation.z;
+    player.position.copy(playerPos);
+
+    var pointgeo = new THREE.Geometry();
+    for (var i = 0; i < 500; i++) {
+        pointgeo.vertices.push(camera.position.clone());
+    };
+    ptcld = new THREE.PointCloud(pointgeo);
+    scene.add(ptcld);
 
     // TODO remove once the menu is enabled
     controls.movementEnabled = true;
@@ -466,9 +482,17 @@ function render() {
 
     var playerPos = camera.position.clone();
     var dir = camera.getWorldDirection();
-    dir.multiplyScalar(100);
+    dir.multiplyScalar(600);
     playerPos.add(dir);
+    player.rotation.x = camera.rotation.x;
+    player.rotation.y = camera.rotation.y;
+    player.rotation.z = camera.rotation.z;
     player.position.copy(playerPos);
+
+    for (var i = 0; i < 500; i++) {
+        var point = ptcld.geometry.vertices[i];
+        point.add(dir.multiplyScalar(700));
+    };
 
     renderer.render(scene, camera);
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
