@@ -120,7 +120,7 @@ function init() {
     //scene.fog = new THREE.FogExp2(Options.bgColor, 0.0004);
     scene.fog = new THREE.Fog(Options.bgColor, maxDist * 3 / 4, maxDist);
 
-    controls = new THREE.FirstPersonControls(camera, document, score);
+    controls = new THREE.FirstPersonControls(camera, document);
     controls.fastSpeed = Options.fastSpeed;
     controls.slowSpeed = Options.slowSpeed;
     controls.lookSpeed = 0;
@@ -401,6 +401,7 @@ function checkSphereCollision() {
         var sphere = results[i].object;
         if (camera.position.distanceTo(sphere.position) < 200) {
             score++;
+            controls.score++;
             $("#score").text(score);
             Sound.play('./sounds/coin.mp3');
             sphereScene.remove(sphere);

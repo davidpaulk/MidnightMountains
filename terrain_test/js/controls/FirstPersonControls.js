@@ -5,7 +5,7 @@
  * @author paulirish / http://paulirish.com/
  */
 
-THREE.FirstPersonControls = function ( object, domElement, coins ) {
+THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.object = object;
 	this.target = new THREE.Vector3( 0, 0, 0 );
@@ -47,6 +47,8 @@ THREE.FirstPersonControls = function ( object, domElement, coins ) {
 	this.phi = 0;
 	this.theta = 0;
 
+    this.score = 0;
+
 	this.moveForward = false;
 	this.moveBackward = false;
 	this.moveLeft = false;
@@ -81,7 +83,7 @@ THREE.FirstPersonControls = function ( object, domElement, coins ) {
 			switch ( event.button ) {
 				case 0: 
 					this.moving = true; 
-					this.movementSpeed = this.fastSpeed; 
+					//this.movementSpeed = this.fastSpeed; 
 					this.moveForward = true; break;
 			}
 		}
@@ -97,8 +99,8 @@ THREE.FirstPersonControls = function ( object, domElement, coins ) {
 
 			switch ( event.button ) {
 				case 0:
-					this.moving = true;
-					this.movementSpeed = this.slowSpeed; 
+					this.moveForward = false;
+					//this.movementSpeed = this.slowSpeed; 
 					break;
 			}
 
@@ -189,7 +191,7 @@ THREE.FirstPersonControls = function ( object, domElement, coins ) {
 		if ( this.enabled === false ) return;
 
 		//var actualMoveSpeed = delta * this.movementSpeed;
-        var cap = 75 + coins;
+        var cap = 75 + this.score;
 		var actualMoveSpeed = delta * 100;
         if (!this.movementEnabled) actualMoveSpeed = 0;
 
@@ -208,7 +210,7 @@ THREE.FirstPersonControls = function ( object, domElement, coins ) {
         else if ( this.moveDown && v.y > -cap) v.y -= actualMoveSpeed;
         else v.y *= slowFactor;
 
-        if (v.lengthSq() < 25.0) v.setLength(25.0);
+        if (v.lengthSq() > cap * cap) v.setLength(cap);
 
         this.object.translateX(v.x);
         this.object.translateY(v.y);
