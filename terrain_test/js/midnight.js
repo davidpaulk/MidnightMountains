@@ -25,7 +25,6 @@ var camera, controls, scene, renderer;
 var clock = new THREE.Clock();
 var dayclock = new THREE.Clock();
 var cells = new Utils.PairMap();
-var shadows = new Utils.PairMap();
 var cellX = null;
 var cellZ = null;
 var spheres = [];
@@ -52,6 +51,8 @@ var uniforms;
 var day = true;
 var mountainUniforms;
 var mountainMaterial;
+var outlineUniforms;
+var outlineMaterial;
 var isPaused = false;
 var effectController  = {
         turbidity: 4,
@@ -72,7 +73,6 @@ function setParams() {
     var clock = new THREE.Clock();
     var dayclock = new THREE.Clock();
     var cells = new Utils.PairMap();
-    var shadows = new Utils.PairMap();
     var cellX = null;
     var cellZ = null;
     var spheres = [];
@@ -143,7 +143,7 @@ function init() {
     var shader = THREE.ShaderLib['mountain'];
     mountainUniforms = THREE.UniformsUtils.clone(shader.uniforms);
     mountainUniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
-    mountainUniforms.myColor = { type: "c", value: new THREE.Color(0x774400) };
+    mountainUniforms.myColor = { type: "c", value: new THREE.Color(0x7a5230) };
     mountainUniforms.isDay.value = day ? 1 : 0;
     mountainMaterial = new THREE.ShaderMaterial({
         defines: {
@@ -156,6 +156,18 @@ function init() {
         fragmentShader: shader.fragmentShader,
         lights:true,
         fog: true
+    });
+
+    shader = THREE.ShaderLib['outline'];
+    outlineUniforms = THREE.UniformsUtils.clone(shader.uniforms);
+    outlineUniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
+    outlineUniforms.isDay = { type: "1i", value: day ? 1 : 0 };
+    outlineMaterial = new THREE.ShaderMaterial({
+        fog: true,
+        side: THREE.BackSide,
+        uniforms: outlineUniforms,
+        vertexShader: shader.vertexShader,
+        fragmentShader: shader.fragmentShader
     });
     addCell(0, 0);
 
@@ -253,8 +265,10 @@ function addCell(iOff, jOff) {
     var mesh = new THREE.Mesh(geometry, mountainMaterial);
     //var mesh = new THREE.Mesh(geometry, material);
 
-    var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
-    meshShadow.visible = false;
+    //var meshShadow = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side:THREE.BackSide, color:0x0 }));
+    var meshShadow = new THREE.Mesh(geometry, outlineMaterial);
+
+    //meshShadow.visible = false;
     meshShadow.scale.multiplyScalar(1.01);
 
     var cell = new THREE.Object3D();
@@ -266,14 +280,12 @@ function addCell(iOff, jOff) {
     cell.translateZ(jOff * Options.cellSize);
 
     cells.set(iOff, jOff, cell);
-    shadows.set(iOff, jOff, meshShadow);
 
     return cell;
 }
 
 function removeCell(i, j) {
     var cell = cells.remove(i, j);
-    shadows.remove(i, j);
     if (cell) {
         terrainScene.remove(cell);
     }
@@ -302,9 +314,10 @@ function addSphere() {
     sphere.position.z = camera.position.z + dir.y * offset + disk.y;
     findGround(sphere.position);
     sphere.position.y += 500;
-    
+
     var glowball = new THREE.PointLight( 0xff0040, 100, 10000 );
     glowball.intensity = 1;
+
     sphere.add(glowball);
     
     sphereScene.add(sphere);
@@ -354,11 +367,11 @@ function loadCells() {
     var zMin = currZ - off;
     var zMax = currZ + off;
     cells.each(function(x, z) {
-        if (x < xMin || x > xMax ||
-            z < zMin || z > zMax) {
+            if (x < xMin || x > xMax ||
+                z < zMin || z > zMax) {
             removeCell(x, z);
-        }
-    });
+            }
+            });
     for (var i = xMin; i <= xMax; i++) {
         for (var j = zMin; j <= zMax; j++) {
             if (!cells.get(i, j)) {
@@ -371,15 +384,6 @@ function loadCells() {
             }
         }
     }
-    var shadowRange = Math.floor(off / 2);
-    shadows.each(function(x, z, shadow) {
-        if (x >= currX - shadowRange && x <= currX + shadowRange &&
-            z >= currZ - shadowRange && z <= currZ + shadowRange) {
-            shadow.visible = true;
-        } else {
-            shadow.visible = false;
-        }
-    });
     cellX = currX;
     cellZ = currZ;
 }
@@ -420,6 +424,7 @@ function updateSpheres() {
     for (var i = 0; i < childrenCopy.length; i++) {
         if (childrenCopy[i].position.distanceTo(camera.position) >= 7000.0) {
             sphereScene.remove(childrenCopy[i]);
+            sphereOctree.remove(childrenCopy[i]);
         }
         else {
             childrenCopy[i].position.x += Math.sin( time * 7 ) * 3;
@@ -556,8 +561,10 @@ function updateSun() {
             updateUniforms();
             sunlight.position.copy(originalpos);
             sunlight.intensity = .5 * Math.sin(time/a)
+            sunSphere.position.set(0, 0, 0);
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
             mountainUniforms.isDay.value = 0;
+            outlineUniforms.isDay.value = 0;
             return;
         }
         sunlight.intensity = 1.6 * Math.sin(time/a);
@@ -580,8 +587,10 @@ function updateSun() {
             updateUniforms();
             sunlight.position.copy(originalpos);
             sunlight.intensity = 1.6 * Math.sin(time/a)
+            sunSphere.position.set(0, 0, 0);
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
             mountainUniforms.isDay.value = 1;
+            outlineUniforms.isDay.value = 1;
             return;
         }
         sunlight.intensity = .5 * Math.sin(time/a)
@@ -589,6 +598,7 @@ function updateSun() {
     }
 
     mountainUniforms.sunPosition.value = sunSphere.position.clone();;
+    outlineUniforms.sunPosition.value = sunSphere.position.clone();;
 }
 
 function updateSunPosition(time, a) {
