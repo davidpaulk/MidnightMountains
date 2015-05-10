@@ -179,8 +179,50 @@ THREE.ShaderLib['mountain'].uniforms.isDay = { type: "1i", value: 1 };
 
 THREE.ShaderLib['outline'] = {
     uniforms: THREE.UniformsUtils.clone(THREE.ShaderLib['basic'].uniforms),
-    vertexShader: THREE.ShaderLib['basic'].vertexShader,
+    vertexShader: [
+            "varying vec3 vWorldPosition;",
+            THREE.ShaderChunk[ "common" ],
+            THREE.ShaderChunk[ "map_pars_vertex" ],
+            THREE.ShaderChunk[ "lightmap_pars_vertex" ],
+            THREE.ShaderChunk[ "envmap_pars_vertex" ],
+            THREE.ShaderChunk[ "color_pars_vertex" ],
+            THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
+            THREE.ShaderChunk[ "skinning_pars_vertex" ],
+            THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
+            THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
+
+            "void main() {",
+        "vec4 worldPos = modelMatrix * vec4( position, 1.0 );",              
+        "vWorldPosition = worldPos.xyz;",
+
+                THREE.ShaderChunk[ "map_vertex" ],
+                THREE.ShaderChunk[ "lightmap_vertex" ],
+                THREE.ShaderChunk[ "color_vertex" ],
+                THREE.ShaderChunk[ "skinbase_vertex" ],
+
+            "   #ifdef USE_ENVMAP",
+
+                THREE.ShaderChunk[ "morphnormal_vertex" ],
+                THREE.ShaderChunk[ "skinnormal_vertex" ],
+                THREE.ShaderChunk[ "defaultnormal_vertex" ],
+
+            "   #endif",
+
+                THREE.ShaderChunk[ "morphtarget_vertex" ],
+                THREE.ShaderChunk[ "skinning_vertex" ],
+                THREE.ShaderChunk[ "default_vertex" ],
+                THREE.ShaderChunk[ "logdepthbuf_vertex" ],
+
+                THREE.ShaderChunk[ "worldpos_vertex" ],
+                THREE.ShaderChunk[ "envmap_vertex" ],
+                THREE.ShaderChunk[ "shadowmap_vertex" ],
+
+            "}"
+
+        ].join("\n"),
     fragmentShader: [
+        Shaders.shader('sky.frag'),
+        "uniform int isDay;",
         "uniform vec3 diffuse;",
         "uniform float opacity;",
 
@@ -215,9 +257,10 @@ THREE.ShaderLib['outline'] = {
 
         THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
-        THREE.ShaderChunk[ "fog_fragment" ],
-
         "   outgoingLight = vec3( 0.0 );",
+        //THREE.ShaderChunk[ "fog_fragment" ],
+        Shaders.shader('fog.frag'),
+
         "   gl_FragColor = vec4( outgoingLight, diffuseColor.a );", // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
 
         "}"
@@ -225,3 +268,9 @@ THREE.ShaderLib['outline'] = {
     ].join("\n")
 };
 
+THREE.ShaderLib['outline'].uniforms.luminance =   { type: "f", value:1.13 };
+THREE.ShaderLib['outline'].uniforms.turbidity =   { type: "f", value:4 };
+THREE.ShaderLib['outline'].uniforms.reileigh =    { type: "f", value:2 };
+THREE.ShaderLib['outline'].uniforms.mieCoefficient =  { type: "f", value:0.005 };
+THREE.ShaderLib['outline'].uniforms.mieDirectionalG = { type: "f", value:0.93 };
+THREE.ShaderLib['outline'].uniforms.isDay = { type: "1i", value: 1 };

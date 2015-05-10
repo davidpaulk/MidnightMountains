@@ -25,7 +25,6 @@ var camera, controls, scene, renderer;
 var clock = new THREE.Clock();
 var dayclock = new THREE.Clock();
 var cells = new Utils.PairMap();
-var shadows = new Utils.PairMap();
 var cellX = null;
 var cellZ = null;
 var spheres = [];
@@ -74,7 +73,6 @@ function setParams() {
     var clock = new THREE.Clock();
     var dayclock = new THREE.Clock();
     var cells = new Utils.PairMap();
-    var shadows = new Utils.PairMap();
     var cellX = null;
     var cellZ = null;
     var spheres = [];
@@ -160,11 +158,12 @@ function init() {
         fog: true
     });
 
-    var shader = THREE.ShaderLib['outline'];
+    shader = THREE.ShaderLib['outline'];
     outlineUniforms = THREE.UniformsUtils.clone(shader.uniforms);
-    //outlineUniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
-    //outlineUniforms.isDay = { type: "1i", value: day ? 1 : 0 };
+    outlineUniforms.sunPosition = { type: "v3", value: sunSphere.position.clone() };
+    outlineUniforms.isDay = { type: "1i", value: day ? 1 : 0 };
     outlineMaterial = new THREE.ShaderMaterial({
+        fog: true,
         side: THREE.BackSide,
         uniforms: outlineUniforms,
         vertexShader: shader.vertexShader,
@@ -281,14 +280,12 @@ function addCell(iOff, jOff) {
     cell.translateZ(jOff * Options.cellSize);
 
     cells.set(iOff, jOff, cell);
-    shadows.set(iOff, jOff, meshShadow);
 
     return cell;
 }
 
 function removeCell(i, j) {
     var cell = cells.remove(i, j);
-    shadows.remove(i, j);
     if (cell) {
         terrainScene.remove(cell);
     }
@@ -387,15 +384,6 @@ function loadCells() {
             }
         }
     }
-    var shadowRange = Math.floor(off / 2);
-    shadows.each(function(x, z, shadow) {
-            if (x >= currX - shadowRange && x <= currX + shadowRange &&
-                z >= currZ - shadowRange && z <= currZ + shadowRange) {
-            shadow.visible = true;
-        } else {
-            //shadow.visible = false;
-        }
-    });
     cellX = currX;
     cellZ = currZ;
 }
@@ -575,6 +563,7 @@ function updateSun() {
             sunlight.intensity = .5 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
             mountainUniforms.isDay.value = 0;
+            outlineUniforms.isDay.value = 0;
             return;
         }
         sunlight.intensity = 1.6 * Math.sin(time/a);
@@ -599,6 +588,7 @@ function updateSun() {
             sunlight.intensity = 1.6 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
             mountainUniforms.isDay.value = 1;
+            outlineUniforms.isDay.value = 1;
             return;
         }
         sunlight.intensity = .5 * Math.sin(time/a)
@@ -606,6 +596,7 @@ function updateSun() {
     }
 
     mountainUniforms.sunPosition.value = sunSphere.position.clone();;
+    outlineUniforms.sunPosition.value = sunSphere.position.clone();;
 }
 
 function updateSunPosition(time, a) {
