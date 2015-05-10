@@ -63,6 +63,7 @@ var effectController  = {
         azimuth: 0.25, // Facing front,
 }
 
+var player;
 
 init();
 animate();
@@ -125,6 +126,11 @@ function init() {
     controls.slowSpeed = Options.slowSpeed;
     controls.lookSpeed = 0;
     controls.movementEnabled = false;
+
+    var playerGeometry = new THREE.SphereGeometry(10, 8, 8);
+    var playerMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+    player = new THREE.Mesh(playerGeometry, playerMaterial);
+    scene.add(player);
 
     /* David's texture code */
     var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
@@ -453,6 +459,12 @@ function render() {
         $("#time").text(minutes + ":" + seconds);
     }
 
+    var playerPos = camera.position.clone();
+    var dir = camera.getWorldDirection();
+    dir.multiplyScalar(100);
+    playerPos.add(dir);
+    player.position.copy(playerPos);
+
     renderer.render(scene, camera);
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
     starScene.position.set(camera.position.x, camera.position.y + 500, camera.position.z);
@@ -463,7 +475,7 @@ function render() {
     updateSpheres();
     updateSun();
     updateStars();
-    if (sphereScene.children.length < 10) addSphere();
+    if (sphereScene.children.length < 10) window.setTimeout(addSphere, 0);
 }
 
 function pause() {
