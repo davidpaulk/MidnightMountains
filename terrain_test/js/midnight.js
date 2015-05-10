@@ -561,6 +561,7 @@ function updateSun() {
             updateUniforms();
             sunlight.position.copy(originalpos);
             sunlight.intensity = .5 * Math.sin(time/a)
+            sunSphere.position.set(0, 0, 0);
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
             mountainUniforms.isDay.value = 0;
             outlineUniforms.isDay.value = 0;
@@ -586,6 +587,7 @@ function updateSun() {
             updateUniforms();
             sunlight.position.copy(originalpos);
             sunlight.intensity = 1.6 * Math.sin(time/a)
+            sunSphere.position.set(0, 0, 0);
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
             mountainUniforms.isDay.value = 1;
             outlineUniforms.isDay.value = 1;
