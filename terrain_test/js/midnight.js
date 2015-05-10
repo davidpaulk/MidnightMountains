@@ -420,6 +420,7 @@ function updateSpheres() {
     for (var i = 0; i < childrenCopy.length; i++) {
         if (childrenCopy[i].position.distanceTo(camera.position) >= 7000.0) {
             sphereScene.remove(childrenCopy[i]);
+            sphereOctree.remove(childrenCopy[i]);
         }
         else {
             childrenCopy[i].position.x += Math.sin( time * 7 ) * 3;
