@@ -53,14 +53,61 @@ var day = true;
 var mountainUniforms;
 var mountainMaterial;
 var isPaused = false;
+var effectController  = {
+        turbidity: 4,
+        reileigh: 2,
+        mieCoefficient: 0.005,
+        mieDirectionalG: 0.93,
+        luminance: 1.13,
+        inclination: 0.49, // elevation / inclination
+        azimuth: 0.25, // Facing front,
+}
+
+
 init();
 animate();
+
+function setParams() {
+    var clock = new THREE.Clock();
+    var dayclock = new THREE.Clock();
+    var cells = new Utils.PairMap();
+    var shadows = new Utils.PairMap();
+    var cellX = null;
+    var cellZ = null;
+    var spheres = [];
+    var maxDist = Options.cellSize * Options.cellRange;
+    var frame = 0;
+    var score = 0;
+    var backgroundMusic = null;
+    var dead = false;
+    var startTime = null;
+    var sunlight = new THREE.DirectionalLight( 0xffffff, 1.5 );
+    var originalpos = new THREE.Vector3(0, 0, 0);
+    var day = true;
+    var isPaused = false;
+    var effectController  = {
+            turbidity: 4,
+            reileigh: 2,
+            mieCoefficient: 0.005,
+            mieDirectionalG: 0.93,
+            luminance: 1.13,
+            inclination: 0.49, // elevation / inclination
+            azimuth: 0.25, // Facing front,
+    }
+}
 
 function start() {
     $("#menu").fadeOut(500, function() {
         controls.movementEnabled = true;
         controls.lookSpeed = Options.lookSpeed;
     });
+}
+
+function reset() {
+    dead = false;
+    setParams();
+    init();
+    animate();
 }
 
 function init() {
@@ -73,7 +120,7 @@ function init() {
     //scene.fog = new THREE.FogExp2(Options.bgColor, 0.0004);
     scene.fog = new THREE.Fog(Options.bgColor, maxDist * 3 / 4, maxDist);
 
-    controls = new THREE.FirstPersonControls(camera);
+    controls = new THREE.FirstPersonControls(camera, document, score);
     controls.fastSpeed = Options.fastSpeed;
     controls.slowSpeed = Options.slowSpeed;
     controls.lookSpeed = 0;
@@ -112,8 +159,8 @@ function init() {
     findGround(camera.position);
     camera.position.y = 4000;
 
-    var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
-    directionalLight.position.set( 1, 1, 1 );
+    // var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
+    // directionalLight.position.set( 1, 1, 1 );
     //scene.add( directionalLight );
 
     light = new THREE.PointLight( 0xffffff, 2, 6000 );
@@ -339,6 +386,10 @@ function checkCollision() {
         if (backgroundMusic) Sound.stop(backgroundMusic);
         Sound.play("./sounds/dead.wav");
         $("#dead").fadeIn(100, 'linear'); dead = true;
+        $("#redo").click(function() {
+            $("#dead").fadeOut(100, 'linear');
+            reset();
+        });
     }
 }
 
@@ -409,7 +460,7 @@ function render() {
     checkCollision();
     checkSphereCollision();
     updateSpheres();
-    updateSunPosition();
+    updateSun();
     updateStars();
     if (sphereScene.children.length < 10) addSphere();
 }
@@ -452,37 +503,18 @@ function initSky(){
     sky = new THREE.Sky();
     scene.add( sky.mesh );
 
-
     // Add Sun Helper
     sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
         new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-    /// GUI
-
-    var effectController  = {
-        turbidity: 4,
-        reileigh: 2,
-        mieCoefficient: 0.005,
-        mieDirectionalG: 0.93,
-        luminance: 1.13,
-        inclination: 0.49, // elevation / inclination
-        azimuth: 0.25, // Facing front,
-    }
 
     var distance = 400000;
 
     uniforms = sky.uniforms;
-    uniforms.turbidity.value = effectController.turbidity;
-    uniforms.reileigh.value = effectController.reileigh;
-    uniforms.luminance.value = effectController.luminance;
-    uniforms.mieCoefficient.value = effectController.mieCoefficient;
-    uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
+    updateUniforms();
 
-    var theta = Math.PI * (effectController.inclination - 0.5);
-    var phi = 2 * Math.PI * (effectController.azimuth - 0.5);
-
-    sunSphere.position.x = distance * Math.cos(phi);
-    sunSphere.position.y = distance * Math.sin(phi) * Math.sin(theta);
-    sunSphere.position.z = distance * Math.sin(phi) * Math.cos(theta);
+    sunSphere.position.x = 0.0;
+    sunSphere.position.y = 0.0;
+    sunSphere.position.z = 1.0;
     sunlight.position.copy(sunSphere.position);
     originalpos.copy(sunSphere.position);
     scene.add(sunlight);
@@ -492,30 +524,23 @@ function initSky(){
     sky.uniforms.sunPosition.value.copy(sunSphere.position);
 }
 
-function updateSunPosition() {
+function updateSun() {
     var time = dayclock.getElapsedTime();
     var a = Options.dayLength;
     if (day) {
         if (Math.sin(time/a) < 0.0) {
             day = false;
             dayclock = new THREE.Clock();
-            sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 10000000000000, 30, 30 ),
-                new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-            var effectController  = {
+            effectController  = {
                 turbidity: 1,
                 reileigh: 0,
                 mieCoefficient: 0.0001,
                 mieDirectionalG: 0.99,
                 luminance: 1.1,
-                inclination: 0.49, // elevation / inclination
-                azimuth: 0.25, // Facing front,
+                inclination: 0.49,
+                azimuth: 0.25,
             }
-            uniforms = sky.uniforms;
-            uniforms.turbidity.value = effectController.turbidity;
-            uniforms.reileigh.value = effectController.reileigh;
-            uniforms.luminance.value = effectController.luminance;
-            uniforms.mieCoefficient.value = effectController.mieCoefficient;
-            uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
+            updateUniforms();
             sunlight.position.copy(originalpos);
             sunlight.intensity = .5 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
@@ -523,33 +548,23 @@ function updateSunPosition() {
             return;
         }
         sunlight.intensity = 1.6 * Math.sin(time/a);
-        sunSphere.position.x = 0;
-        sunSphere.position.y = Math.sin(time/a);
-        sunSphere.position.z = Math.cos(time/a);
-        sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
-        sky.uniforms.sunPosition.value.copy(sunSphere.position);
+        updateSunPosition(time, a);
+
     }
     else {
         if (Math.sin(time/a) < 0.0) {
             day = true;
             dayclock = new THREE.Clock();
-            sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
-                new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
-            var effectController  = {
+            effectController  = {
                 turbidity: 4,
                 reileigh: 2,
                 mieCoefficient: 0.005,
                 mieDirectionalG: 0.93,
                 luminance: 1.13,
-                inclination: 0.49, // elevation / inclination
-                azimuth: 0.25, // Facing front,
+                inclination: 0.49,
+                azimuth: 0.25,
             }
-            uniforms = sky.uniforms;
-            uniforms.turbidity.value = effectController.turbidity;
-            uniforms.reileigh.value = effectController.reileigh;
-            uniforms.luminance.value = effectController.luminance;
-            uniforms.mieCoefficient.value = effectController.mieCoefficient;
-            uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
+            updateUniforms();
             sunlight.position.copy(originalpos);
             sunlight.intensity = 1.6 * Math.sin(time/a)
             sky.uniforms.sunPosition.value.copy(sunSphere.position);
@@ -557,12 +572,25 @@ function updateSunPosition() {
             return;
         }
         sunlight.intensity = .5 * Math.sin(time/a)
-        sunSphere.position.x = 0;
-        sunSphere.position.y = Math.sin(time/a);
-        sunSphere.position.z = Math.cos(time/a);
-        sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
-        sky.uniforms.sunPosition.value.copy(sunSphere.position);
+        updateSunPosition(time, a);
     }
 
     mountainUniforms.sunPosition.value = sunSphere.position.clone();;
+}
+
+function updateSunPosition(time, a) {
+    sunSphere.position.x = 0;
+    sunSphere.position.y = Math.sin(time/a);
+    sunSphere.position.z = Math.cos(time/a);
+    sunlight.position.set(0, Math.sin(time/a), Math.cos(time/a));
+    sky.uniforms.sunPosition.value.copy(sunSphere.position);
+}
+
+function updateUniforms() {
+    uniforms = sky.uniforms;
+    uniforms.turbidity.value = effectController.turbidity;
+    uniforms.reileigh.value = effectController.reileigh;
+    uniforms.luminance.value = effectController.luminance;
+    uniforms.mieCoefficient.value = effectController.mieCoefficient;
+    uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
 }
