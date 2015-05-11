@@ -63,39 +63,9 @@ var effectController  = {
         inclination: 0.49, // elevation / inclination
         azimuth: 0.25, // Facing front,
 }
-var ptcld;
-var player;
 
 init();
 animate();
-
-function setParams() {
-    var clock = new THREE.Clock();
-    var dayclock = new THREE.Clock();
-    var cells = new Utils.PairMap();
-    var cellX = null;
-    var cellZ = null;
-    var spheres = [];
-    var maxDist = Options.cellSize * Options.cellRange;
-    var frame = 0;
-    var score = 0;
-    var backgroundMusic = null;
-    var dead = false;
-    var startTime = null;
-    var sunlight = new THREE.DirectionalLight( 0xffffff, 1.5 );
-    var originalpos = new THREE.Vector3(0, 0, 0);
-    var day = true;
-    var isPaused = false;
-    var effectController  = {
-            turbidity: 4,
-            reileigh: 2,
-            mieCoefficient: 0.005,
-            mieDirectionalG: 0.93,
-            luminance: 1.13,
-            inclination: 0.49, // elevation / inclination
-            azimuth: 0.25, // Facing front,
-    }
-}
 
 function start() {
     clock = new THREE.Clock();
@@ -105,7 +75,6 @@ function start() {
         controls.movementEnabled = true;
         controls.lookSpeed = Options.lookSpeed;
         backgroundMusic = Sound.play("./sounds/music.mp3", true);
-        scene.add(player);
     });
 }
 
@@ -131,15 +100,6 @@ function init() {
     controls.slowSpeed = Options.slowSpeed;
     controls.lookSpeed = 0;
     controls.movementEnabled = false;
-
-    var playerGeometry = new THREE.RingGeometry( 95, 100, 32 );
-    var playerMaterial = new THREE.MeshPhongMaterial( { color: 0x7f3f77 } );
-    player = new THREE.Mesh( playerGeometry, playerMaterial );
-
-    /* David's texture code */
-    var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
-    //mountainMaterial = new THREE.MeshLambertMaterial({ map: mountainTexture });
-    //mountainMaterial.normalMap = THREE.ImageUtils.loadTexture( "js/textures/mountain_2_normal.jpg" ).rgb;
 
     terrainScene = new THREE.Object3D();
     scene.add(terrainScene);
@@ -235,22 +195,6 @@ function init() {
             pause();
         }
     });
-
-    var playerPos = camera.position.clone();
-    var dir = camera.getWorldDirection();
-    dir.multiplyScalar(600);
-    playerPos.add(dir);
-    player.rotation.x = camera.rotation.x;
-    player.rotation.y = camera.rotation.y;
-    player.rotation.z = camera.rotation.z;
-    player.position.copy(playerPos);
-
-    var pointgeo = new THREE.Geometry();
-    for (var i = 0; i < 500; i++) {
-        pointgeo.vertices.push(camera.position.clone());
-    };
-    ptcld = new THREE.PointCloud(pointgeo);
-    scene.add(ptcld);
 
     // TODO remove once the menu is enabled
     //controls.movementEnabled = true;
@@ -497,19 +441,6 @@ function render() {
         $("#time").text(minutes + ":" + seconds);
     }
 
-    var playerPos = camera.position.clone();
-    var dir = camera.getWorldDirection();
-    dir.multiplyScalar(600);
-    playerPos.add(dir);
-    player.rotation.x = camera.rotation.x;
-    player.rotation.y = camera.rotation.y;
-    player.rotation.z = camera.rotation.z;
-    player.position.copy(playerPos);
-
-    for (var i = 0; i < 500; i++) {
-        var point = ptcld.geometry.vertices[i];
-        point.add(dir.multiplyScalar(700));
-    };
 
     renderer.render(scene, camera);
     light.position.set(camera.position.x, camera.position.y, camera.position.z);
