@@ -98,11 +98,11 @@ function setParams() {
 }
 
 function start() {
+    clock = new THREE.Clock();
+    dayclock = new THREE.Clock();
     $("#menu").fadeOut(500, function() {
         controls.movementEnabled = true;
         controls.lookSpeed = Options.lookSpeed;
-        clock.start();
-        dayclock.start();
         backgroundMusic = Sound.play("./sounds/music.mp3", true);
     });
 }
@@ -213,7 +213,10 @@ function init() {
     });
     
     starScene = new THREE.Object3D();
-    starMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+    starMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        fog: false
+    });
     for (var i = 0; i < 100; i++) {
         var pos = Random.sphere(10000);
         if (pos.y < 0) {
@@ -456,16 +459,15 @@ function updateSpheres() {
 }
 
 function updateStars() {
-    var day = Options.dayLength;
-    var time = (clock.getElapsedTime() / day / Math.PI) % 2
-    if (time < 1) {
+    var time = (dayclock.getElapsedTime() / (Options.dayLength * Math.PI));
+    if (day) {
         starScene.visible = false;
-    } else if (1. < time && time < 1.1) {
-        var b = (time - 1.) / 0.1;
+    } else if (time < 0.1) {
+        var b = time / 0.1;
         starScene.visible = true;
         starMaterial.color.setRGB(b, b, b);
-    } else if (1.9 < time && time < 2.) {
-        var b = 1. - (time - 1.9) / 0.1;
+    } else if (.9 < time) {
+        var b = 1. - (time - 0.9) / 0.1;
         starMaterial.color.setRGB(b, b, b);
     }
 }
