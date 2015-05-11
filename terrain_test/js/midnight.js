@@ -179,7 +179,7 @@ function init() {
     camera.position.x = 0;
     camera.position.z = 0;
     findGround(camera.position);
-    camera.position.y = 4000;
+    camera.position.y += 1000;
 
     // var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
     // directionalLight.position.set( 1, 1, 1 );
