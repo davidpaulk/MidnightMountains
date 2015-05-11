@@ -248,8 +248,8 @@ function init() {
     scene.add(ptcld);
 
     // TODO remove once the menu is enabled
-    controls.movementEnabled = true;
-    controls.lookSpeed = Options.lookSpeed;
+    //controls.movementEnabled = true;
+    //controls.lookSpeed = Options.lookSpeed;
 }
 
 function findGround(pos) {
