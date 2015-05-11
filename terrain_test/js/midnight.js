@@ -419,6 +419,8 @@ function checkCollision() {
         if (backgroundMusic) Sound.stop(backgroundMusic);
         Sound.play("./sounds/dead.wav");
         $("#dead").fadeIn(100, 'linear'); dead = true;
+        $("#finalTime").text($("#time").text());
+        $("#finalScore").text(score);
         /*
         $("#redo").click(function() {
             $("#dead").fadeOut(100, 'linear');
