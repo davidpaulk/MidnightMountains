@@ -43,7 +43,19 @@ The position update is small enough so that animating them does not make it more
 
 \subsection{Player Perspective}
 \subsection{Navigation Controls}
+The controls are implemented with a modified THREE.FirstPersonControls. The code for looking around with the mouse is maintained; however, the movement itself is overhauled. We store the player's current velocity as a vector, and accelerate or decelerate by a constant value in each direction based on input commands. The velocity is capped, and beyond this cap, the velocity vector is scaled down to fit the cap. Additionally, the player's movement speed will decay over time if acceleration is not continued. Currently, velocity decreases by 1 percent every frame, though this is of course adjustable.
+
+\subsection{Mountain Terrain}
+The mountain terrain was initially based on the THREE.js WebGL Geometry Terrain demo (cite $http://threejs.org/examples/webgl_geometry_terrain.html$). We retain the Perlin noise generator used by the demo, but have overhauled most other aspects of the demo.
+
+The mountain's material was made using an extended version of the MeshLambertMaterial in the THREE.js libraries. Non-photorealistic rendering of the mountains was added through toon shading and outlines. Toon shading was achieved by quantizing the $n \cdot l$ value when calculating Lambertian reflectance. Adding the outline was initially difficult, due to the many difficulties discussed in class and the need for complex ray caster operations to determine where to draw lines. However, we found a clever hack for outlining shapes that made the process significantly easier (cite $https://stemkoski.github.io/Three.js/Outline.html$). In order to add outlines, this hack duplicates all meshes, uses a basic black texture for the duplicates, and scales the duplicates up by a very small factor (we use $1.01$). Then, we add the duplicates to the scene but only render the back side of the faces. This makes it so that the only parts of the duplicate that are visible are the parts slightly beyond crests in the mesh, exactly where we want outlines!
+
 \subsection{Mountain Terrain Spawning}
+We also added infinite spawning of terrain so one can fly without worrying about hitting a boundary. In order to achieve this without using too much memory or processing power, we divide up the world into square tiles $1500$ by $1500$ units large. In the scene, we only include tiles that are within a certain distance to the player, and we dynamically add or remove tiles as necessary as the player moves. Careful offsetting within the Perlin noise function ensures that the terrain is continuous even though each tile is generated separately.
+
+\subsection{Fog}
+Fog is an important part of our game, as not only does it add ambience, but it also conceals the fact that we are adding and removing chunks of terrain as the player moves. However, adding fog proved to be a harder task than expected. Although THREE.js comes with a default implementation of fog, it only allows you to set the fog to a static color. Since we have a dynamic and multicolored background due to the day/night cycle, a static color does not suffice. Thus, we manually created ShaderMaterials for various objects in our scenes with an enhanced version of fog that calculates fog color based on position and orientation.
+
 \subsection{Collision Detection}
 \subsection{Extras}
 
