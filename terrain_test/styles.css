@@ -27,6 +27,11 @@ body {
 #menu h1 {
     font-family: 'Dancing Script', cursive;
     font-size: 50px;
+    margin-bottom: 1em;
+    color:#222;
+}
+
+#menu p {
     margin-bottom: 2em;
     color:#222;
 }
