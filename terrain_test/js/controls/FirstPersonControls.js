@@ -15,7 +15,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	this.enabled = true;
-	this.movementEnabled = true;
+	this.movementEnabled = false;
 
     this.moving = false;
 	this.movementSpeed = 1.0;
@@ -74,6 +74,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.onMouseDown = function ( event ) {
+        if (!this.movementEnabled) return;
 		if ( this.domElement !== document ) {
 			this.domElement.focus();
 		}
@@ -121,6 +122,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.onKeyDown = function ( event ) {
+        if (!this.movementEnabled) return;
 
 		//event.preventDefault();
 

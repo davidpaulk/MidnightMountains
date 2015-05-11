@@ -99,11 +99,13 @@ function setParams() {
 
 function start() {
     clock = new THREE.Clock();
-    dayclock = new THREE.Clock();
+    $("#scoreWrap").fadeIn(500);
+    $("#timeWrap").fadeIn(500);
     $("#menu").fadeOut(500, function() {
         controls.movementEnabled = true;
         controls.lookSpeed = Options.lookSpeed;
         backgroundMusic = Sound.play("./sounds/music.mp3", true);
+        scene.add(player);
     });
 }
 
@@ -133,7 +135,6 @@ function init() {
     var playerGeometry = new THREE.RingGeometry( 95, 100, 32 );
     var playerMaterial = new THREE.MeshPhongMaterial( { color: 0x7f3f77 } );
     player = new THREE.Mesh( playerGeometry, playerMaterial );
-    scene.add(player);
 
     /* David's texture code */
     var mountainTexture = THREE.ImageUtils.loadTexture( "js/textures/mountain_2.jpg" );
@@ -200,7 +201,7 @@ function init() {
     stats = new Stats();
     stats.domElement.style.position = 'absolute';
     stats.domElement.style.top = '0px';
-    container.appendChild(stats.domElement);
+    //container.appendChild(stats.domElement);
 
     window.addEventListener('resize', onWindowResize, false);
     sphereScene = new THREE.Object3D();

@@ -21,11 +21,14 @@ body {
 
 #menu {
     padding-top: 15%;
-    background: #222;
+    background: rgba(255,255,255,0.2);
 }
 
 #menu h1 {
-    margin-bottom: 1em;
+    font-family: 'Dancing Script', cursive;
+    font-size: 50px;
+    margin-bottom: 2em;
+    color:#222;
 }
 
 #dead {
@@ -38,10 +41,15 @@ body {
 .button {
     display: inline-block;
     border-radius: 10px;
-    border: 2px solid #ddd;
+    border: 2px solid #222;
+    color: #222;
     padding: 5px 20px;
-    color: #ddd;
     text-decoration: none;
+}
+
+#dead .button {
+    border-color: #ddd;
+    color: #ddd;
 }
 
 #pause {
@@ -61,6 +69,7 @@ body {
     opacity: 0.6;
     padding: 5px;
     font-size: 16px;
+    display: none;
 }
 #timeWrap {
     position: absolute; top: 0px; right: 100px;
@@ -69,6 +78,7 @@ body {
     opacity: 0.6;
     padding: 5px;
     font-size: 16px;
+    display: none;
 }
 #score, #time {
     font-weight: bold;
