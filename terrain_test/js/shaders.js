@@ -11,6 +11,8 @@ Shaders.load('cel.vert');
 Shaders.load('sky.frag');
 Shaders.load('fog.frag');
 
+// Sky shader from
+// http://threejs.org/examples/webgl_shaders_sky.html
 THREE.ShaderLib['sky'] = {
     uniforms: {
         luminance:   { type: "f", value:1 },

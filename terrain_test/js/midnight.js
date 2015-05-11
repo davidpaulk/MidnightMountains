@@ -351,6 +351,8 @@ function addSphere() {
     return sphere;
 }  
 
+// Noise function from
+// http://threejs.org/examples/webgl_geometry_terrain.html
 function generateHeight(width, height, iOff, jOff) {
     var size = width * height, data = new Uint8Array(size),
         perlin = new ImprovedNoise(), quality = 1;
