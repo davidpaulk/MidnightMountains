@@ -101,6 +101,9 @@ function start() {
     $("#menu").fadeOut(500, function() {
         controls.movementEnabled = true;
         controls.lookSpeed = Options.lookSpeed;
+        clock.start();
+        dayclock.start();
+        backgroundMusic = Sound.play("./sounds/music.mp3", true);
     });
 }
 
@@ -223,8 +226,6 @@ function init() {
     }
     scene.add(starScene);
 
-    backgroundMusic = Sound.play("./sounds/music.mp3");
-
     window.addEventListener('keypress', function(evt) {
         if (evt.keyCode == 112) { // P
             pause();
@@ -250,6 +251,8 @@ function init() {
     // TODO remove once the menu is enabled
     //controls.movementEnabled = true;
     //controls.lookSpeed = Options.lookSpeed;
+    clock.stop();
+    dayclock.stop();
 }
 
 function findGround(pos) {
@@ -412,10 +415,12 @@ function checkCollision() {
         if (backgroundMusic) Sound.stop(backgroundMusic);
         Sound.play("./sounds/dead.wav");
         $("#dead").fadeIn(100, 'linear'); dead = true;
+        /*
         $("#redo").click(function() {
             $("#dead").fadeOut(100, 'linear');
             reset();
         });
+       */
     }
 }
 

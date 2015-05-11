@@ -12,6 +12,11 @@ body {
     position: absolute;
     top: 0px; left: 0px;
     width: 100%; height: 100%;
+    z-index: 100000;
+}
+
+#container {
+    z-index: 0;
 }
 
 #menu {
@@ -21,6 +26,13 @@ body {
 
 #menu h1 {
     margin-bottom: 1em;
+}
+
+#dead {
+    padding-top: 15%;
+    color: #ddd;
+    background: #c23b22;
+    display: none;
 }
 
 .button {
@@ -39,15 +51,6 @@ body {
     font-weight: bold;
     font-size: 30px;
     opacity: 0.6;
-    display: none;
-}
-
-#dead {
-    padding-top: 20%;
-    color: white;
-    background: #c23b22;
-    font-weight: bold;
-    font-size: 30px;
     display: none;
 }
 
