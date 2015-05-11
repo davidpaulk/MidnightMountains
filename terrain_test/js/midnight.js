@@ -421,6 +421,11 @@ function checkCollision() {
         $("#dead").fadeIn(100, 'linear'); dead = true;
         $("#finalTime").text($("#time").text());
         $("#finalScore").text(score);
+
+        var elapsed = clock.getElapsedTime() - startTime;
+        var ratio = score / elapsed;
+        $("#finalRatio").text(ratio.toFixed(2));
+
         /*
         $("#redo").click(function() {
             $("#dead").fadeOut(100, 'linear');
@@ -435,7 +440,7 @@ function checkSphereCollision() {
     for (var i = 0; i < results.length; i++) {
         var sphere = results[i].object;
         if (camera.position.distanceTo(sphere.position) < 200) {
-            score++;
+            score+=10;
             controls.score++;
             $("#score").text(score);
             Sound.play('./sounds/coin.mp3');
