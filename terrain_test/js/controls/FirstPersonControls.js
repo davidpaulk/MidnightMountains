@@ -73,20 +73,24 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		}
 	};
 
-	this.onMouseDown = function ( event ) {
+    this.onMouseDown = function ( event ) {
         if (!this.movementEnabled) return;
-		if ( this.domElement !== document ) {
-			this.domElement.focus();
-		}
-		event.preventDefault();
-		event.stopPropagation();
-		if ( this.activeLook ) {
-			switch ( event.button ) {
-				case 0: 
-					this.moving = true; 
-					//this.movementSpeed = this.fastSpeed; 
-					this.moveForward = true; break;
-			}
+        if ( this.domElement !== document ) {
+            this.domElement.focus();
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        if ( this.activeLook ) {
+            switch ( event.button ) {
+                case 0: 
+                    this.moving = true; 
+                    this.moveForward = true;
+                    break;
+                case 2: 
+                    this.moving = true; 
+                    this.moveBackward = true;
+                    break;
+            }
 		}
 		this.mouseDragOn = true;
 	};
@@ -101,7 +105,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			switch ( event.button ) {
 				case 0:
 					this.moveForward = false;
-					//this.movementSpeed = this.slowSpeed; 
+					break;
+				case 2:
+					this.moveBackward = false;
 					break;
 			}
 
