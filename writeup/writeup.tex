@@ -8,13 +8,10 @@
 \usepackage{float}
 \usepackage{tabularx}
 \usepackage{hyperref}
-<<<<<<< HEAD
 \usepackage{graphicx}
 
-=======
 \usepackage{geometry}
 \geometry{margin=1in}
->>>>>>> 1e936fe34be66c9387ef57933a6986b8c1e72aac
 \begin{document}
 
 \title{Midnight Mountains - Final Project Write-up}
@@ -36,7 +33,6 @@ The aim of our project was to implement a simple video game with a focus on qual
 Our project builds on the work of several other projects.  The Perlin noise generator used for generating heights for the mountains was adapted from \url{http://threejs.org/examples/webgl_geometry_terrain.html}.  The day-night cycle that makes the sky dynamic was implemented using [a WebGL demo] (need citation) as start code. The game music was taken from the Mario videogame (need citation).
  
 \subsection{Approach}
-We tried to implement normative mapping using a mountain texture.  Our implementation approach for adding this feature did not work because it could not be used simultaneously with the fog and continuously rendering the mountain texture as new mountain terrain is spawned proved to be computationally expensive, resulting in noticeable latency.
 
 \section{Methodology}
 The following subsections describe each part of the video implementation in further detail.  The parts include sky rendering, coin rendering, player perspective, navigation controls, mountain terrain spawning, collision detection, and extras (i.e. game menus and audio tracks).
@@ -88,6 +84,18 @@ Music and sound effects were added using the HTML5 Audio API.
 \caption{Start Screen and End Screen}
 \end{center}
 \end{figure}
+
+\subsection{Unimplemented Features}
+There were a number of features that we either chose not to include in the final version or did not get to complete
+
+\subsubsection{Third Person Player Mesh}
+Originally, we wanted to implement the game as a third person one with a ring as the player. When orbs passed through the ring, they would be considered collected. However, because we felt that the ring did not fit the game's aesthetic and to make it feel more a part of the game we would have to create more dynamic camera aspects, we chose to not include it.
+
+\subsubsection{Third Personal Player Particle System}
+After deciding not to do the ring, we attempted to implement a particle system player that would appear like a comet with a comet tail. However, we encountered a considerable amount of difficult when trying to implement the THREE.PointCloud class and as a result decided to stop pursuing it.
+
+\subsection{Textures}
+We tried to implement normative mapping using a mountain texture.  Our implementation approach for adding this feature did not work because it could not be used simultaneously with the fog and continuously rendering the mountain texture as new mountain terrain is spawned proved to be computationally expensive, resulting in noticeable latency.
 
 \section{Results}
 %How did we measure success
