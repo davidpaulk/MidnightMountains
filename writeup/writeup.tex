@@ -12,6 +12,7 @@
 
 \usepackage{geometry}
 \geometry{margin=1in}
+
 \begin{document}
 
 \title{Midnight Mountains - Final Project Write-up}
@@ -52,6 +53,8 @@ $$z += cos( time * 3 ) * 3$$
 The position update is small enough so that animating them does not make it more difficult for the user to collect coins.  When the user's player collides with a coin, the score increases by one and the coin is removed from the scene.  One implementation challenge that we faced was figuring out how to spawn and update coins in a way that would avoid noticeable latency.  While one approach would be to limit the amount of memory occupied by each coin, this approach would prevent us from adding extra coin features such as lighting (glow).  A better approach for avoiding latency that we chose was to limit the number of coins present in the scene at any point in time.  We did this by first adding a maximum distance from the player that the coins can be spawned and updated at (7000 units).  Second, we limited the number of coins that could be present at any time to 10, so that after 10 coins are spawned, no more can be spawned until one or more is collected by the player.
 
 \subsection{Player Perspective}
+We tried using several player perspectives in Midnight Mountains.  First, considered a first-person perspective where the screen represents the viewpoint of the player.  Next, we implemented third-person player perspectives where the player was slightly in front of the camera and either shaped as a ring or sphere.  After implementing both types of perspective, we decided that the third-person perspective detracted from the view of the mountains and used the first-person perspective in our final product.
+
 \subsection{Navigation Controls}
 The controls are implemented with a modified THREE.FirstPersonControls. The code for looking around with the mouse is maintained; however, the movement itself is overhauled. We store the player's current velocity as a vector, and accelerate or decelerate by a constant value in each direction based on input commands. The velocity is capped, and beyond this cap, the velocity vector is scaled down to fit the cap. Additionally, the player's movement speed will decay over time if acceleration is not continued. Currently, velocity decreases by 1 percent every frame, though this is of course adjustable.
 
@@ -80,8 +83,9 @@ Music and sound effects were added using the HTML5 Audio API.
 
 \begin{figure}[H]
 \begin{center}
-\fbox{\includegraphics[width=0.45\textwidth,height=\textheight,keepaspectratio]{start_screen}}
-\caption{Start Screen and End Screen}
+\fbox{\includegraphics[width=0.65\textwidth,height=\textheight,keepaspectratio]{start_screen}}
+\fbox{\includegraphics[width=0.3\textwidth,height=\textheight,keepaspectratio]{end_screen}}
+\caption{Start Screen and End Screens}
 \end{center}
 \end{figure}
 
@@ -107,6 +111,12 @@ Our final product combines the features that best supported our core goal.  Seve
 %
 
 \section{Discussion}
+Overall, our game offers both fun gameplay and quality graphics. Our approach of dynamically generating terrain in fragments allows us to generate a vast landscape for the user to explore, and also offers the developer the ability to easily add further features without incurring too much computational overhead.
+
+Additional work that could enhance the experience include adding an avatar for the character, adding additional features in the environment, and varying the scoring system. We experimented with various ways of representing the player character, but ultimately decided not to add an avatar. However, a high quality model of a bird or something.
+
+% Add what we learned
+
 \section{Conclusion}
 
 \end{document}
