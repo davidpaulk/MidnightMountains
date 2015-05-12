@@ -1,4 +1,3 @@
-
 /**
  * @author mrdoob / http://mrdoob.com/
  * @author alteredq / http://alteredqualia.com/
@@ -7,282 +6,273 @@
 
 THREE.FirstPersonControls = function ( object, domElement ) {
 
-	this.object = object;
-	this.target = new THREE.Vector3( 0, 0, 0 );
+    this.object = object;
+    this.target = new THREE.Vector3( 0, 0, 0 );
 
-	this.velocity = new THREE.Vector3( 0, 0, 0 );
+    this.domElement = ( domElement !== undefined ) ? domElement : document;
 
-	this.domElement = ( domElement !== undefined ) ? domElement : document;
+    this.enabled = true;
 
-	this.enabled = true;
-	this.movementEnabled = false;
+    this.movementSpeed = 5000.0;
+    this.lookSpeed = 0.005;
 
-    this.moving = false;
-	this.movementSpeed = 1.0;
-	this.fastSpeed = 1.0;
-	this.slowSpeed = 0.5;
-	this.lookSpeed = 0.005;
+    this.lookVertical = true;
+    this.autoForward = false;
 
-	this.lookVertical = true;
-	this.autoForward = false;
+    this.activeLook = true;
 
-	this.activeLook = true;
+    this.heightSpeed = false;
+    this.heightCoef = 1.0;
+    this.heightMin = 0.0;
+    this.heightMax = 1.0;
 
-	this.heightSpeed = false;
-	this.heightCoef = 1.0;
-	this.heightMin = 0.0;
-	this.heightMax = 1.0;
+    this.constrainVertical = false;
+    this.verticalMin = 0;
+    this.verticalMax = Math.PI;
 
-	this.constrainVertical = false;
-	this.verticalMin = 0;
-	this.verticalMax = Math.PI;
+    this.autoSpeedFactor = 0.0;
 
-	this.autoSpeedFactor = 0.0;
+    this.mouseX = 0;
+    this.mouseY = 0;
 
-	this.mouseX = 0;
-	this.mouseY = 0;
+    this.lat = 0;
+    this.lon = 0;
+    this.phi = 0;
+    this.theta = 0;
 
-	this.lat = 0;
-	this.lon = 0;
-	this.phi = 0;
-	this.theta = 0;
+    this.moveForward = false;
+    this.moveBackward = false;
+    this.moveLeft = false;
+    this.moveRight = false;
 
-    this.score = 0;
+    this.mouseDragOn = false;
 
-	this.moveForward = false;
-	this.moveBackward = false;
-	this.moveLeft = false;
-	this.moveRight = false;
+    this.viewHalfX = 0;
+    this.viewHalfY = 0;
 
-	this.mouseDragOn = false;
+    if ( this.domElement !== document ) {
 
-	this.viewHalfX = 0;
-	this.viewHalfY = 0;
+        this.domElement.setAttribute( 'tabindex', -1 );
 
-	if ( this.domElement !== document ) {
-		this.domElement.setAttribute( 'tabindex', -1 );
-	}
+    }
 
-	this.handleResize = function () {
-		if ( this.domElement === document ) {
-			this.viewHalfX = window.innerWidth / 2;
-			this.viewHalfY = window.innerHeight / 2;
-		} else {
-			this.viewHalfX = this.domElement.offsetWidth / 2;
-			this.viewHalfY = this.domElement.offsetHeight / 2;
-		}
-	};
+    //
+
+    this.handleResize = function () {
+
+        if ( this.domElement === document ) {
+
+            this.viewHalfX = window.innerWidth / 2;
+            this.viewHalfY = window.innerHeight / 2;
+
+        } else {
+
+            this.viewHalfX = this.domElement.offsetWidth / 2;
+            this.viewHalfY = this.domElement.offsetHeight / 2;
+
+        }
+
+    };
 
     this.onMouseDown = function ( event ) {
-        if (!this.movementEnabled) return;
+
         if ( this.domElement !== document ) {
+
             this.domElement.focus();
+
         }
+
         event.preventDefault();
         event.stopPropagation();
+
         if ( this.activeLook ) {
+
             switch ( event.button ) {
-                case 0: 
-                    this.moving = true; 
-                    this.moveForward = true;
-                    break;
-                case 2: 
-                    this.moving = true; 
-                    this.moveBackward = true;
-                    break;
+
+                case 0: this.moveForward = true; break;
+                case 2: this.moveBackward = true; break;
+
             }
-		}
-		this.mouseDragOn = true;
-	};
 
-	this.onMouseUp = function ( event ) {
+        }
 
-		event.preventDefault();
-		event.stopPropagation();
+        this.mouseDragOn = true;
 
-		if ( this.activeLook ) {
+    };
 
-			switch ( event.button ) {
-				case 0:
-					this.moveForward = false;
-					break;
-				case 2:
-					this.moveBackward = false;
-					break;
-			}
+    this.onMouseUp = function ( event ) {
 
-		}
+        event.preventDefault();
+        event.stopPropagation();
 
-		this.mouseDragOn = false;
+        if ( this.activeLook ) {
 
-	};
+            switch ( event.button ) {
 
-	this.onMouseMove = function ( event ) {
-		if ( this.domElement === document ) {
-			this.mouseX = event.pageX - this.viewHalfX;
-			this.mouseY = event.pageY - this.viewHalfY;
-		} else {
-			this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
-			this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
-		}
-	};
+                case 0: this.moveForward = false; break;
+                case 2: this.moveBackward = false; break;
 
-	this.onKeyDown = function ( event ) {
-        if (!this.movementEnabled) return;
+            }
 
-		//event.preventDefault();
+        }
 
-		switch ( event.keyCode ) {
+        this.mouseDragOn = false;
 
-			case 38: /*up*/
-			case 87: /*W*/ 
-				this.moving = true; 
-				this.moveForward = true; 
-				break;
+    };
 
-			case 37: /*left*/
-			case 65: /*A*/ 
-				this.moving = true; 
-				this.moveLeft = true; 
-				break;
+    this.onMouseMove = function ( event ) {
 
-			case 40: /*down*/
-			case 83: /*S*/ 
-			this.moving = true; 
-			this.moveBackward = true;
-			break;
+        if ( this.domElement === document ) {
 
-			case 39: /*right*/
-			case 68: /*D*/ 
-			this.moving = true; 
-			this.moveRight = true;
-			break;
+            this.mouseX = event.pageX - this.viewHalfX;
+            this.mouseY = event.pageY - this.viewHalfY;
 
-			case 82: /*R*/ 
-			this.moving = true; 
-			this.moveUp = true;
-			break;
+        } else {
 
-			case 70: /*F*/ 
-			this.moving = true; 
-			this.moveDown = true
-			break;
+            this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
+            this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
 
-		}
+        }
 
-	};
+    };
 
-	this.onKeyUp = function ( event ) {
+    this.onKeyDown = function ( event ) {
 
-		switch ( event.keyCode ) {
+        //event.preventDefault();
 
-			case 38: /*up*/
-			case 87: /*W*/ this.moveForward = false; break;
+        switch ( event.keyCode ) {
 
-			case 37: /*left*/
-			case 65: /*A*/ this.moveLeft = false; break;
+            case 38: /*up*/
+            case 87: /*W*/ this.moveForward = true; break;
 
-			case 40: /*down*/
-			case 83: /*S*/ this.moveBackward = false; break;
+            case 37: /*left*/
+            case 65: /*A*/ this.moveLeft = true; break;
 
-			case 39: /*right*/
-			case 68: /*D*/ this.moveRight = false; break;
+            case 40: /*down*/
+            case 83: /*S*/ this.moveBackward = true; break;
 
-			case 82: /*R*/ this.moveUp = false; break;
-			case 70: /*F*/ this.moveDown = false; break;
+            case 39: /*right*/
+            case 68: /*D*/ this.moveRight = true; break;
 
-		}
+            case 82: /*R*/ this.moveUp = true; break;
+            case 70: /*F*/ this.moveDown = true; break;
 
-	};
+        }
 
-	this.update = function( delta ) {
-		if ( this.enabled === false ) return;
+    };
 
-		//var actualMoveSpeed = delta * this.movementSpeed;
-        var cap = 75 + this.score;
-		var actualMoveSpeed = delta * 100;
-        if (!this.movementEnabled) actualMoveSpeed = 0;
+    this.onKeyUp = function ( event ) {
 
-        var v = this.velocity;
-        var slowFactor = 0.99;
+        switch ( event.keyCode ) {
 
-		if ( this.moveForward && v.z > -cap) v.z -= actualMoveSpeed;
-        else if ( this.moveBackward && v.z < cap) v.z += actualMoveSpeed;
-        else v.z *= slowFactor;
+            case 38: /*up*/
+            case 87: /*W*/ this.moveForward = false; break;
 
-		if ( this.moveLeft && v.x > -cap) v.x -= actualMoveSpeed;
-        else if ( this.moveRight && v.x < cap) v.x += actualMoveSpeed;
-        else v.x *= slowFactor;
+            case 37: /*left*/
+            case 65: /*A*/ this.moveLeft = false; break;
 
-		if ( this.moveUp && v.y < cap) v.y += actualMoveSpeed;
-        else if ( this.moveDown && v.y > -cap) v.y -= actualMoveSpeed;
-        else v.y *= slowFactor;
+            case 40: /*down*/
+            case 83: /*S*/ this.moveBackward = false; break;
 
-        if (v.lengthSq() > cap * cap) v.setLength(cap);
+            case 39: /*right*/
+            case 68: /*D*/ this.moveRight = false; break;
 
-        this.object.translateX(v.x);
-        this.object.translateY(v.y);
-        this.object.translateZ(v.z);
+            case 82: /*R*/ this.moveUp = false; break;
+            case 70: /*F*/ this.moveDown = false; break;
 
-		var actualLookSpeed = delta * this.lookSpeed;
+        }
 
-		if ( !this.activeLook ) {
-			actualLookSpeed = 0;
-		}
+    };
 
-		var verticalLookRatio = 1;
+    this.update = function( delta ) {
 
-		if ( this.constrainVertical ) {
+        if ( this.enabled === false ) return;
 
-			verticalLookRatio = Math.PI / ( this.verticalMax - this.verticalMin );
+        if ( this.heightSpeed ) {
 
-		}
+            var y = THREE.Math.clamp( this.object.position.y, this.heightMin, this.heightMax );
+            var heightDelta = y - this.heightMin;
 
-		this.lon += this.mouseX * actualLookSpeed;
-		if ( this.lookVertical ) this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+            this.autoSpeedFactor = delta * ( heightDelta * this.heightCoef );
 
-		this.lat = Math.max( - 85, Math.min( 85, this.lat ) );
-		this.phi = THREE.Math.degToRad( 90 - this.lat );
+        } else {
 
-		this.theta = THREE.Math.degToRad( this.lon );
+            this.autoSpeedFactor = 0.0;
 
-		if ( this.constrainVertical ) {
+        }
 
-			this.phi = THREE.Math.mapLinear( this.phi, 0, Math.PI, this.verticalMin, this.verticalMax );
+        var actualMoveSpeed = delta * this.movementSpeed;
 
-		}
+        if ( this.moveForward || ( this.autoForward && !this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
+        if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
 
-		var targetPosition = this.target,
-			position = this.object.position;
+        if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
+        if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
 
-		targetPosition.x = position.x + 100 * Math.sin( this.phi ) * Math.cos( this.theta );
-		targetPosition.y = position.y + 100 * Math.cos( this.phi );
-		targetPosition.z = position.z + 100 * Math.sin( this.phi ) * Math.sin( this.theta );
+        if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
+        if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
 
-		this.object.lookAt( targetPosition );
+        var actualLookSpeed = delta * this.lookSpeed;
 
-	};
+        if ( !this.activeLook ) {
+
+            actualLookSpeed = 0;
+
+        }
+
+        var verticalLookRatio = 1;
+
+        if ( this.constrainVertical ) {
+
+            verticalLookRatio = Math.PI / ( this.verticalMax - this.verticalMin );
+
+        }
+
+        this.lon += this.mouseX * actualLookSpeed;
+        if ( this.lookVertical ) this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+
+        this.lat = Math.max( - 85, Math.min( 85, this.lat ) );
+        this.phi = THREE.Math.degToRad( 90 - this.lat );
+
+        this.theta = THREE.Math.degToRad( this.lon );
+
+        if ( this.constrainVertical ) {
+
+            this.phi = THREE.Math.mapLinear( this.phi, 0, Math.PI, this.verticalMin, this.verticalMax );
+
+        }
+
+        var targetPosition = this.target,
+            position = this.object.position;
+
+        targetPosition.x = position.x + 100 * Math.sin( this.phi ) * Math.cos( this.theta );
+        targetPosition.y = position.y + 100 * Math.cos( this.phi );
+        targetPosition.z = position.z + 100 * Math.sin( this.phi ) * Math.sin( this.theta );
+
+        this.object.lookAt( targetPosition );
+
+    };
 
 
-	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
+    this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
 
-	this.domElement.addEventListener( 'mousemove', bind( this, this.onMouseMove ), false );
-	this.domElement.addEventListener( 'mousedown', bind( this, this.onMouseDown ), false );
-	this.domElement.addEventListener( 'mouseup', bind( this, this.onMouseUp ), false );
+    this.domElement.addEventListener( 'mousemove', bind( this, this.onMouseMove ), false );
+    this.domElement.addEventListener( 'mousedown', bind( this, this.onMouseDown ), false );
+    this.domElement.addEventListener( 'mouseup', bind( this, this.onMouseUp ), false );
 
-	window.addEventListener( 'keydown', bind( this, this.onKeyDown ), false );
-	window.addEventListener( 'keyup', bind( this, this.onKeyUp ), false );
+    window.addEventListener( 'keydown', bind( this, this.onKeyDown ), false );
+    window.addEventListener( 'keyup', bind( this, this.onKeyUp ), false );
 
-	function bind( scope, fn ) {
+    function bind( scope, fn ) {
 
-		return function () {
+        return function () {
 
-			fn.apply( scope, arguments );
+            fn.apply( scope, arguments );
 
-		};
+        };
 
-	};
+    };
 
-	this.handleResize();
+    this.handleResize();
 
-};
+};;
