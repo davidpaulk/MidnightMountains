@@ -34,10 +34,11 @@ The aim of our project was to implement a simple video game with a focus on qual
 Our project builds on the work of several other projects.  The Perlin noise generator used for generating heights for the mountains was adapted from \url{http://threejs.org/examples/webgl_geometry_terrain.html}.  The day-night cycle that makes the sky dynamic was implemented using [a WebGL demo] (need citation) as start code. The game music was taken from the Mario videogame (need citation).
  
 \subsection{Approach}
+The general approach of our team was to build the features in order of importance to the overall usability of the game and then refine as we accomplished a larger and larger percentage of those task. We began by building the mountains, then moved to orb implementation. After that, we built the sky and then moved to improving the player controls. Throughout the process, we refined our shaders and other parts of the project such as lighting.
 
 \section{Methodology}
 The following subsections describe each part of the video implementation in further detail.  The parts include sky rendering, coin rendering, player perspective, navigation controls, mountain terrain spawning, collision detection, and extras (i.e. game menus and audio tracks).
-\subsection{Sky Rendering}
+\subsection{Sky and Day/Night Rendering}
 \begin{figure}[H]
 \begin{center}
 \fbox{\includegraphics[width=0.47\textwidth,height=\textheight,keepaspectratio]{daytime}}
@@ -45,6 +46,8 @@ The following subsections describe each part of the video implementation in furt
 \caption{Day-Night Cycle}
 \end{center}
 \end{figure}
+In order to build the sky feature, we used the shaders/sky demo available on the three.js website at http://threejs.org/examples/#webgl_shaders_sky. Taking the code from the demo, we separated out the shader and adapted the JavaScript code to fit our environment. Doing so required some tweaking to both our code and the code we received. The sky is rendered based on the "sun" which could be either a sun or moon depending on the properties we set for it. To minimize the memory and processing power used, we actually made the sun and the moon the same object; when the sun sets, for instance, it is sent back to its original position with the attributes of the moon. This allows us to render more quickly and avoid managing assets that are not in the frame.
+ 
 \subsection{Coin Rendering}
 It is the goal of the user to collect as many coins as possible before crashing into the mountainside.  A coin is represented in Javascript as a THREE.Object3D in the shape of a sphere and contains a THREE.PointLight to illuminate it, which is particularly convenient during the night when it is harder to navigate the terrain.  The coins are animated by moving the x, y and z coordinates of their positions according the periodic function, relative to their spawn position.
 $$x += sin( time * 7 ) * 3$$
@@ -100,6 +103,9 @@ After deciding not to do the ring, we attempted to implement a particle system p
 
 \subsection{Textures}
 We tried to implement normative mapping using a mountain texture.  Our implementation approach for adding this feature did not work because it could not be used simultaneously with the fog and continuously rendering the mountain texture as new mountain terrain is spawned proved to be computationally expensive, resulting in noticeable latency.
+
+\subsection{Rain}
+We considered adding a rain feature, but ran into similar particle system issues that we ran into with when we tried to create a third personal player particle system.
 
 \section{Results}
 %How did we measure success
