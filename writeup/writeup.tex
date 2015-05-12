@@ -31,7 +31,7 @@ Signature: \textit{David Paulk, Channing Huang, Christopher Giglio}
 $\indent$ The aim of our project was to implement a simple video game with a focus on quality graphics.  The user's objective is to collect as many coins as possible while navigating a mountain terrain.  When the user collides with the mountain, the game ends.  As the user performs the coin-collecting task, the scene changes in several ways: a day-night cycle reflects the passage of time, the coins float about their spawn-points according to a periodic function, and the player gains speed as more coins are collected.  Also, the light emitted by the sun, the players, and the coins affects the surface of objects in the scene such as the mountainside and the fog.
 
 \subsection{Previous Work}
-$\indent$ Our project builds on the work of several other projects.  The Perlin noise generator used for generating heights for the mountains was adapted from \url{http://threejs.org/examples/webgl_geometry_terrain.html}. This demo also allows one to fly around terrain but only has basic noise generation for the terrain and basic controls. The day-night cycle that makes the sky dynamic was implemented using \url{http://threejs.org/examples/webgl_shaders_sky.html} as start code. The game music was taken from the Mario videogame \url{http://themushroomkingdom.net/media/smw/wav}.
+$\indent$ Our project builds on the work of several other projects.  The Perlin noise generator used for generating heights for the mountains was adapted from \url{http://threejs.org/examples/webgl_geometry_terrain.html}. This demo also allows one to fly around terrain but only has basic noise generation for the terrain and basic controls for the player. The day-night cycle that makes the sky dynamic was implemented using \url{http://threejs.org/examples/webgl_shaders_sky.html} as start code. The game music was taken from the Mario videogame \url{http://themushroomkingdom.net/media/smw/wav}.
  
 \subsection{Approach}
 $\indent$ The general approach of our team was to build the features in order of importance to the overall usability of the game and then refine as we accomplished a larger and larger percentage of those task. We began by building the mountains, then moved to orb implementation. After that, we built the sky and then moved to improving the player controls. Throughout the process, we refined our shaders and other parts of the project such as lighting.
@@ -61,7 +61,7 @@ $\indent$ The position update is small enough so that animating them does not ma
 $\indent$ We tried using several player perspectives in Midnight Mountains.  First, considered a first-person perspective where the screen represents the viewpoint of the player.  Next, we implemented third-person player perspectives where the player was slightly in front of the camera and either shaped as a ring or sphere.  After implementing both types of perspective, we decided that the third-person perspective detracted from the view of the mountains and used the first-person perspective in our final product.
 
 \subsection{Navigation Controls}
-$\indent$ The controls are implemented with a modified THREE.FirstPersonControls. The code for looking around with the mouse is maintained; however, the movement itself is overhauled. We store the player's current velocity as a vector, and accelerate or decelerate by a constant based on input commands. The velocity is capped, and beyond this cap, the velocity vector is scaled down to fit the cap. Additionally, the player's movement speed will decay over time if acceleration is not continued. Currently, velocity decreases by 1 percent every frame, though this is of course adjustable.
+$\indent$ The user can move the player by either using the mouse or the A, W, S, D, R and F keys. The controls are implemented with a modified THREE.FirstPersonControls. The code for looking around with the mouse is maintained; however, the movement itself is overhauled. We store the player's current velocity as a vector, and accelerate or decelerate by a constant based on input commands. The velocity is capped, and beyond this cap, the velocity vector is scaled down to fit the cap. Additionally, the player's movement speed will decay over time if acceleration is not continued. Currently, velocity decreases by 1 percent every frame, though this is of course adjustable.  
 
 \subsection{Mountain Terrain}
 $\indent$ The mountain terrain was initially based on the THREE.js WebGL Geometry Terrain demo at \url{http://threejs.org/examples/webgl_geometry_terrain.html}. We retain the Perlin noise generator used by the demo, but have overhauled most other aspects of the demo.
@@ -88,8 +88,8 @@ Music and sound effects were added using the HTML5 Audio API.
 
 \begin{figure}[H]
 \begin{center}
-\fbox{\includegraphics[width=0.65\textwidth,height=\textheight,keepaspectratio]{start_screen}}
-\fbox{\includegraphics[width=0.3\textwidth,height=\textheight,keepaspectratio]{end_screen}}
+\fbox{\includegraphics[width=0.54\textwidth,height=\textheight,keepaspectratio]{start_screen}}
+\fbox{\includegraphics[width=0.25\textwidth,height=\textheight,keepaspectratio]{end_screen}}
 \caption{Start Screen and End Screens}
 \end{center}
 \end{figure}
