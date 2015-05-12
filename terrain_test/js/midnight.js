@@ -161,7 +161,7 @@ function init() {
     stats = new Stats();
     stats.domElement.style.position = 'absolute';
     stats.domElement.style.top = '0px';
-    //container.appendChild(stats.domElement);
+    container.appendChild(stats.domElement);
 
     window.addEventListener('resize', onWindowResize, false);
     sphereScene = new THREE.Object3D();
